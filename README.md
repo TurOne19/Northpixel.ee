@@ -1,2 +1,0 @@
-# Northpixel.ee
-Сайт
