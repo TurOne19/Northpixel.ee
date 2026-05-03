@@ -295,7 +295,7 @@ export default function Home() {
                 {c('Мы берём на себя ключевые задачи, чтобы сайт начал работать сразу после запуска.', 'Võtame peamised ülesanded enda peale, et veebileht hakkaks tööle kohe pärast käivitamist.', 'We handle the key tasks so your website starts working right after launch.')}
               </p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))', gap: 16, maxWidth: 1000, margin: '0 auto' }}>
               {[
                 { icon: '⚡', title: c('Готовый сайт за 7 дней', 'Valmis veebileht 7 päevaga', 'Ready website in 7 days'), desc: c('Запускаем быстро без потери качества', 'Käivitame kiiresti ilma kvaliteeti kaotamata', 'Launch fast without sacrificing quality') },
                 { icon: '🎨', title: c('Индивидуальный дизайн', 'Individuaalne disain', 'Individual design'), desc: c('Под ваш бизнес, не шаблонное решение', 'Teie äri jaoks, mitte malli lahendus', 'For your business, not a template') },
@@ -304,12 +304,19 @@ export default function Home() {
                 { icon: '📩', title: c('Форма заявок', 'Päringuvorm', 'Lead form'), desc: c('Подключаем email и мессенджеры', 'Ühendame e-posti ja sõnumirakendused', 'Connect email and messengers') },
                 { icon: '📱', title: c('Мобильная версия', 'Mobiiliversioon', 'Mobile version'), desc: c('Идеально на любом устройстве', 'Ideaalselt igal seadmel', 'Perfect on any device') },
               ].map((item, i) => (
-                <div key={i} className="card" style={{ padding: '28px 26px', minHeight: 160 }}>
-                  <div style={{ width: 46, height: 46, borderRadius: 12, background: 'rgba(79,156,249,0.07)', border: '1px solid rgba(79,156,249,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, marginBottom: 16 }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '18px 24px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, transition: 'border-color 0.2s', cursor: 'default' }}
+                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(79,156,249,0.25)')}
+                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(79,156,249,0.07)', border: '1px solid rgba(79,156,249,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
                     {item.icon}
                   </div>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8, letterSpacing: '-0.01em' }}>{item.title}</h3>
-                  <p style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.6 }}>{item.desc}</p>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 2, letterSpacing: '-0.01em' }}>{item.title}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>{item.desc}</div>
+                  </div>
+                  <div style={{ marginLeft: 'auto', flexShrink: 0 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" opacity="0.4"><path d="M20 6L9 17l-5-5"/></svg>
+                  </div>
                 </div>
               ))}
             </div>
@@ -370,21 +377,80 @@ export default function Home() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: 22 }}>
               {[
-                { title: 'ManuFarm', industry: c('Металл', 'Metall', 'Metal'), desc: c('Лендинг с каталогом продукции', 'Maandumisleht tootekataloogiga', 'Landing page with product catalog'), tags: ['Landing Page', 'B2B'], link: 'https://www.manufarm.ee', days: 5, scrollOffset: 0 },
-                { title: 'Florista', industry: c('Цветы', 'Lilled', 'Flowers'), desc: c('Бизнес-сайт со страницами услуг', 'Äriveebileht teenuselehtedega', 'Business site with service pages'), tags: ['Business Site', 'Local'], link: 'https://flower-shop-simple.vercel.app', days: 8, scrollOffset: 0 },
-                { title: 'Aquapark H2O', industry: c('Аквапарк', 'Veekeskus', 'Aquapark'), desc: c('E-commerce с интеграцией оплаты', 'E-pood maksete integratsiooniga', 'E-commerce with payment integration'), tags: ['E-commerce', 'Booking'], link: 'https://aquapark-ee.vercel.app', days: 12, scrollOffset: -300 },
-                { title: c('Юлия Петров', 'Julia Petrov', 'Julia Petrov'), industry: c('Нутрициология', 'Toitumine', 'Nutrition'), desc: c('Личный бренд с отзывами и мультиязычностью', 'Isiklik bränd arvustuste ja mitmekeelsusega', 'Personal brand with reviews & multilingual'), tags: ['Personal Brand', 'Multilingual'], link: 'https://nutritsiolog-2.vercel.app', days: 10, scrollOffset: 0 },
+                {
+                  title: 'ManuFarm', industry: c('Металл', 'Metall', 'Metal'),
+                  desc: c('Лендинг с каталогом продукции', 'Maandumisleht tootekataloogiga', 'Landing page with product catalog'),
+                  tags: ['Landing Page', 'B2B'], link: 'https://www.manufarm.ee', days: 5,
+                  bg: 'linear-gradient(135deg, #1a0a00 0%, #2d1200 40%, #1a0800 100%)',
+                  accent: '#ff6b00',
+                  preview: (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24 }}>
+                      <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'white', opacity: 0.9 }}>MANUFARM</div>
+                      <div style={{ fontSize: 22, fontWeight: 900, color: '#ff6b00', textAlign: 'center', lineHeight: 1.2 }}>Металлоконструкции<br/>нового уровня</div>
+                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textAlign: 'center', maxWidth: 200 }}>Проектирование, производство и установка</div>
+                      <div style={{ background: '#ff6b00', color: 'white', fontSize: 11, fontWeight: 700, padding: '6px 18px', borderRadius: 6, marginTop: 4 }}>Ещё работаем</div>
+                    </div>
+                  )
+                },
+                {
+                  title: 'Florista', industry: c('Цветы', 'Lilled', 'Flowers'),
+                  desc: c('Бизнес-сайт со страницами услуг', 'Äriveebileht teenuselehtedega', 'Business site with service pages'),
+                  tags: ['Business Site', 'Local'], link: 'https://flower-shop-simple.vercel.app', days: 8,
+                  bg: 'linear-gradient(135deg, #1a0520 0%, #2d0a3d 40%, #1a0520 100%)',
+                  accent: '#e879f9',
+                  preview: (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 24 }}>
+                      <div style={{ fontSize: 13, color: '#e879f9', fontWeight: 600 }}>🌸 Florista</div>
+                      <div style={{ fontSize: 24, fontWeight: 900, color: 'white', textAlign: 'center', lineHeight: 1.2 }}>Цветы, которые<br/>говорят за вас</div>
+                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textAlign: 'center' }}>Свежие композиции с доставкой по Таллину</div>
+                      <div style={{ background: '#e879f9', color: 'white', fontSize: 11, fontWeight: 700, padding: '6px 18px', borderRadius: 6 }}>Заказать букет</div>
+                    </div>
+                  )
+                },
+                {
+                  title: 'Aquapark H2O', industry: c('Аквапарк', 'Veekeskus', 'Aquapark'),
+                  desc: c('E-commerce с интеграцией оплаты', 'E-pood maksete integratsiooniga', 'E-commerce with payment integration'),
+                  tags: ['E-commerce', 'Booking'], link: 'https://aquapark-ee.vercel.app', days: 12,
+                  bg: 'linear-gradient(135deg, #0a1628 0%, #0d2040 40%, #0a1628 100%)',
+                  accent: '#f5c842',
+                  preview: (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 24 }}>
+                      <div style={{ fontSize: 11, color: '#f5c842', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Aquapark H2O</div>
+                      <div style={{ fontSize: 20, fontWeight: 900, color: 'white', textAlign: 'center', lineHeight: 1.2 }}>Водное приключение<br/>для всей семьи</div>
+                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textAlign: 'center' }}>Билеты онлайн · Лучшие цены</div>
+                      <div style={{ background: '#f5c842', color: '#0a1628', fontSize: 11, fontWeight: 800, padding: '6px 18px', borderRadius: 6 }}>Купить билет</div>
+                    </div>
+                  )
+                },
+                {
+                  title: c('Юлия Петров', 'Julia Petrov', 'Julia Petrov'), industry: c('Нутрициология', 'Toitumine', 'Nutrition'),
+                  desc: c('Личный бренд с отзывами и мультиязычностью', 'Isiklik bränd arvustuste ja mitmekeelsusega', 'Personal brand with reviews & multilingual'),
+                  tags: ['Personal Brand', 'Multilingual'], link: 'https://nutritsiolog-2.vercel.app', days: 10,
+                  bg: 'linear-gradient(135deg, #0d1f0d 0%, #162916 40%, #0d1f0d 100%)',
+                  accent: '#4ade80',
+                  preview: (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 24 }}>
+                      <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(74,222,128,0.15)', border: '2px solid rgba(74,222,128,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>👩</div>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: 'white', textAlign: 'center' }}>Юлия Петров</div>
+                      <div style={{ fontSize: 12, color: '#4ade80', fontWeight: 600 }}>Нутрициолог</div>
+                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', textAlign: 'center', maxWidth: 180 }}>Персональный подход к питанию и здоровью</div>
+                    </div>
+                  )
+                },
               ].map((project, i) => (
                 <a key={i} href={project.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }} className="card">
                   <div>
-                    {/* iframe preview */}
-                    <div style={{ width: '100%', height: 200, borderRadius: '18px 18px 0 0', position: 'relative', overflow: 'hidden', background: '#fff' }}>
-                      <iframe src={project.link} style={{ width: '200%', height: '200%', border: 'none', transform: `scale(0.5) translateY(${(project as {scrollOffset?: number}).scrollOffset ?? 0}px)`, transformOrigin: 'top left', pointerEvents: 'none' }} loading="lazy" title={project.title} sandbox="allow-scripts allow-same-origin"/>
-                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(15,23,38,0.6))', pointerEvents: 'none' }}/>
+                    {/* Static brand preview */}
+                    <div style={{ width: '100%', height: 210, borderRadius: '18px 18px 0 0', position: 'relative', overflow: 'hidden', background: project.bg }}>
+                      {/* Grid lines decoration */}
+                      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '40px 40px' }}/>
+                      {/* Glow */}
+                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 200, height: 200, borderRadius: '50%', background: `radial-gradient(circle, ${project.accent}22 0%, transparent 70%)`, pointerEvents: 'none' }}/>
+                      {project.preview}
                       <div style={{ position: 'absolute', top: 12, right: 12 }}>
-                        <span style={{ background: 'rgba(79,156,249,0.85)', backdropFilter: 'blur(8px)', color: 'white', fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 100 }}>{project.industry}</span>
+                        <span style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', border: `1px solid ${project.accent}44`, color: project.accent, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 100 }}>{project.industry}</span>
                       </div>
-                      <div style={{ position: 'absolute', bottom: 12, left: 12, color: 'rgba(255,255,255,0.7)', fontSize: 11, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', padding: '3px 10px', borderRadius: 100 }}>
+                      <div style={{ position: 'absolute', bottom: 12, left: 12, color: 'rgba(255,255,255,0.6)', fontSize: 11, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', padding: '3px 10px', borderRadius: 100 }}>
                         ⏱ {project.days} {c('дней', 'päeva', 'days')}
                       </div>
                     </div>
@@ -392,7 +458,7 @@ export default function Home() {
                       <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6, letterSpacing: '-0.01em' }}>{project.title}</h3>
                       <p style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.6, marginBottom: 14 }}>{project.desc}</p>
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
-                        {project.tags.map((tag, j) => <span key={j} className="tag">{tag}</span>)}
+                        {project.tags.map((tag: string, j: number) => <span key={j} className="tag">{tag}</span>)}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--accent)', fontSize: 13, fontWeight: 600 }}>
                         {c('Открыть проект', 'Ava projekt', 'Open project')}
@@ -459,6 +525,15 @@ export default function Home() {
                     c('Консультация по развитию', 'Arenduskonsultatsioon', 'Growth consultation'),
                   ], featured: false,
                 },
+                {
+                  name: c('ДОПОЛНИТЕЛЬНО', 'LISATEENUSED', 'ADD-ONS'), price: '', badge: null,
+                  fit: c('Расширения к любому пакету', 'Laiendused igale paketile', 'Add-ons for any package'),
+                  features: [
+                    c('Логотип: 50€', 'Logo: 50€', 'Logo: 50€'),
+                    c('Тексты / копирайтинг: 50€', 'Tekstid / copywriting: 50€', 'Copy / copywriting: 50€'),
+                    c('Доп. страницы — по договорённости', 'Lisaleheküljed — kokkuleppel', 'Extra pages — by agreement'),
+                  ], featured: false,
+                },
 
               ].map((plan, i) => (
                 <div key={i} className={`card ${plan.featured ? 'featured-card' : ''}`} style={{ padding: '28px' }}>
@@ -468,7 +543,7 @@ export default function Home() {
                     </div>
                   )}
                   <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>{plan.name}</div>
-                  {plan.price !== '+' && <div style={{ fontFamily: 'var(--font-inter)', fontSize: 40, fontWeight: 800, color: plan.featured ? 'var(--accent)' : 'white', marginBottom: 4, letterSpacing: '-0.03em' }}>{plan.price}</div>}
+                  {plan.price && <div style={{ fontFamily: 'var(--font-inter)', fontSize: 40, fontWeight: 800, color: plan.featured ? 'var(--accent)' : 'white', marginBottom: 4, letterSpacing: '-0.03em' }}>{plan.price}</div>}
                   <div style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid var(--border)' }}>{plan.fit}</div>
                   <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 24 }}>
                     {plan.features.map((f, j) => (
@@ -478,7 +553,7 @@ export default function Home() {
                       </li>
                     ))}
                   </ul>
-                  {plan.name !== c('ДОПОЛНИТЕЛЬНО', 'LISATEENUSED', 'ADD-ONS') && (
+                  {plan.price !== '' && (
                     <button className={plan.featured ? 'btn-primary' : 'btn-secondary'} onClick={() => scrollTo('contact')} style={{ width: '100%', justifyContent: 'center' }}>
                       {c('Выбрать', 'Vali', 'Choose')}
                     </button>
