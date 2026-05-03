@@ -368,18 +368,18 @@ export default function Home() {
                 {c('Реальные и концептуальные проекты, которые показывают наш подход.', 'Reaalsed ja kontseptuaalsed projektid, mis näitavad meie lähenemist.', 'Real and conceptual projects that show our approach.')}
               </p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 22 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: 22 }}>
               {[
-                { title: 'ManuFarm', industry: c('Металл', 'Metall', 'Metal'), desc: c('Лендинг с каталогом продукции', 'Maandumisleht tootekataloogiga', 'Landing page with product catalog'), tags: ['Landing Page', 'B2B'], link: 'https://www.manufarm.ee', days: 5 },
-                { title: 'Florista', industry: c('Цветы', 'Lilled', 'Flowers'), desc: c('Бизнес-сайт со страницами услуг', 'Äriveebileht teenuselehtedega', 'Business site with service pages'), tags: ['Business Site', 'Local'], link: 'https://flower-shop-simple.vercel.app', days: 8 },
-                { title: 'Aquapark H2O', industry: c('Аквапарк', 'Veekeskus', 'Aquapark'), desc: c('E-commerce с интеграцией оплаты', 'E-pood maksete integratsiooniga', 'E-commerce with payment integration'), tags: ['E-commerce', 'Booking'], link: 'https://aquapark-ee.vercel.app', days: 12 },
-                { title: c('Юлия Петров', 'Julia Petrov', 'Julia Petrov'), industry: c('Нутрициология', 'Toitumine', 'Nutrition'), desc: c('Личный бренд с отзывами и мультиязычностью', 'Isiklik bränd arvustuste ja mitmekeelsusega', 'Personal brand with reviews & multilingual'), tags: ['Personal Brand', 'Multilingual'], link: 'https://nutritsiolog-2.vercel.app', days: 10 },
+                { title: 'ManuFarm', industry: c('Металл', 'Metall', 'Metal'), desc: c('Лендинг с каталогом продукции', 'Maandumisleht tootekataloogiga', 'Landing page with product catalog'), tags: ['Landing Page', 'B2B'], link: 'https://www.manufarm.ee', days: 5, scrollOffset: 0 },
+                { title: 'Florista', industry: c('Цветы', 'Lilled', 'Flowers'), desc: c('Бизнес-сайт со страницами услуг', 'Äriveebileht teenuselehtedega', 'Business site with service pages'), tags: ['Business Site', 'Local'], link: 'https://flower-shop-simple.vercel.app', days: 8, scrollOffset: 0 },
+                { title: 'Aquapark H2O', industry: c('Аквапарк', 'Veekeskus', 'Aquapark'), desc: c('E-commerce с интеграцией оплаты', 'E-pood maksete integratsiooniga', 'E-commerce with payment integration'), tags: ['E-commerce', 'Booking'], link: 'https://aquapark-ee.vercel.app', days: 12, scrollOffset: -300 },
+                { title: c('Юлия Петров', 'Julia Petrov', 'Julia Petrov'), industry: c('Нутрициология', 'Toitumine', 'Nutrition'), desc: c('Личный бренд с отзывами и мультиязычностью', 'Isiklik bränd arvustuste ja mitmekeelsusega', 'Personal brand with reviews & multilingual'), tags: ['Personal Brand', 'Multilingual'], link: 'https://nutritsiolog-2.vercel.app', days: 10, scrollOffset: 0 },
               ].map((project, i) => (
                 <a key={i} href={project.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }} className="card">
                   <div>
                     {/* iframe preview */}
                     <div style={{ width: '100%', height: 200, borderRadius: '18px 18px 0 0', position: 'relative', overflow: 'hidden', background: '#fff' }}>
-                      <iframe src={project.link} style={{ width: '200%', height: '200%', border: 'none', transform: 'scale(0.5)', transformOrigin: 'top left', pointerEvents: 'none' }} loading="lazy" title={project.title} sandbox="allow-scripts allow-same-origin"/>
+                      <iframe src={project.link} style={{ width: '200%', height: '200%', border: 'none', transform: `scale(0.5) translateY(${(project as {scrollOffset?: number}).scrollOffset ?? 0}px)`, transformOrigin: 'top left', pointerEvents: 'none' }} loading="lazy" title={project.title} sandbox="allow-scripts allow-same-origin"/>
                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(15,23,38,0.6))', pointerEvents: 'none' }}/>
                       <div style={{ position: 'absolute', top: 12, right: 12 }}>
                         <span style={{ background: 'rgba(79,156,249,0.85)', backdropFilter: 'blur(8px)', color: 'white', fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 100 }}>{project.industry}</span>
@@ -459,15 +459,7 @@ export default function Home() {
                     c('Консультация по развитию', 'Arenduskonsultatsioon', 'Growth consultation'),
                   ], featured: false,
                 },
-                {
-                  name: c('ДОПОЛНИТЕЛЬНО', 'LISATEENUSED', 'ADD-ONS'), price: '+', badge: null,
-                  fit: c('Расширения', 'Laiendused', 'Extensions'),
-                  features: [
-                    c('Логотип: 50€', 'Logo: 50€', 'Logo: 50€'),
-                    c('Тексты / копирайтинг: 50€', 'Tekstid / copywriting: 50€', 'Copy / copywriting: 50€'),
-                    c('Доп. страницы — по договорённости', 'Lisaleheküljed — kokkuleppel', 'Extra pages — by agreement'),
-                  ], featured: false,
-                },
+
               ].map((plan, i) => (
                 <div key={i} className={`card ${plan.featured ? 'featured-card' : ''}`} style={{ padding: '28px' }}>
                   {plan.badge && (
@@ -572,7 +564,7 @@ export default function Home() {
 
         {/* ── CONTACT ── */}
         <section id="contact" style={{ padding: '96px 24px', background: 'var(--bg-light)' }}>
-          <div style={{ maxWidth: 1160, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 56, alignItems: 'start' }}>
+          <div style={{ maxWidth: 1160, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: 56, alignItems: 'start' }}>
             <div>
               <span className="section-label" style={{ marginBottom: 24, display: 'inline-flex' }}>
                 {c('Связаться', 'Võtke ühendust', 'Contact')}
