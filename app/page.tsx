@@ -295,7 +295,7 @@ export default function Home() {
                 {c('Мы берём на себя ключевые задачи, чтобы сайт начал работать сразу после запуска.', 'Võtame peamised ülesanded enda peale, et veebileht hakkaks tööle kohe pärast käivitamist.', 'We handle the key tasks so your website starts working right after launch.')}
               </p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))', gap: 16, maxWidth: 1000, margin: '0 auto' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 480px), 1fr))', gap: 12 }}>
               {[
                 { icon: '⚡', title: c('Готовый сайт за 7 дней', 'Valmis veebileht 7 päevaga', 'Ready website in 7 days'), desc: c('Запускаем быстро без потери качества', 'Käivitame kiiresti ilma kvaliteeti kaotamata', 'Launch fast without sacrificing quality') },
                 { icon: '🎨', title: c('Индивидуальный дизайн', 'Individuaalne disain', 'Individual design'), desc: c('Под ваш бизнес, не шаблонное решение', 'Teie äri jaoks, mitte malli lahendus', 'For your business, not a template') },
