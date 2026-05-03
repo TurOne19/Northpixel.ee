@@ -2,6 +2,156 @@
 import { useState, useEffect } from 'react'
 import { brand, locales, Lang } from '@/lib/content'
 
+// ─── Aquapark custom hero preview (1:1 replica of original hero) ──────────────
+function AquaparkHeroPreview() {
+  return (
+    <div style={{
+      width: '100%', height: '100%', position: 'relative', overflow: 'hidden',
+      background: '#1a0f2e', fontFamily: "'Montserrat', sans-serif",
+    }}>
+      {/* Background image simulation — water slides color blocks */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(135deg, #2d1b4e 0%, #3d2060 30%, #4a2870 50%, #2d1b4e 100%)',
+      }}/>
+
+      {/* Slide shapes — right side visual */}
+      <div style={{ position: 'absolute', right: 0, top: 0, width: '58%', height: '100%', overflow: 'hidden' }}>
+        {/* Dark/black tube slide — top right */}
+        <div style={{
+          position: 'absolute', right: '-8%', top: '5%',
+          width: '55%', height: '45%',
+          background: 'linear-gradient(160deg, #1a1a1a 0%, #2d2d2d 40%, #1a1a1a 100%)',
+          borderRadius: '50% 50% 40% 40% / 30% 30% 20% 20%',
+          transform: 'rotate(-8deg)',
+          boxShadow: 'inset -8px 0 20px rgba(0,0,0,0.6), 4px 4px 20px rgba(0,0,0,0.5)',
+        }}/>
+        {/* Second dark tube */}
+        <div style={{
+          position: 'absolute', right: '12%', top: '0%',
+          width: '35%', height: '55%',
+          background: 'linear-gradient(170deg, #222 0%, #333 50%, #111 100%)',
+          borderRadius: '40% 40% 30% 30% / 20% 20% 15% 15%',
+          transform: 'rotate(5deg)',
+          boxShadow: 'inset -6px 0 15px rgba(0,0,0,0.7)',
+        }}/>
+        {/* Purple/violet slide — center */}
+        <div style={{
+          position: 'absolute', right: '5%', top: '25%',
+          width: '70%', height: '40%',
+          background: 'linear-gradient(180deg, #7c3aed 0%, #6d28d9 40%, #5b21b6 100%)',
+          borderRadius: '50% 50% 40% 40% / 25% 25% 20% 20%',
+          transform: 'rotate(-3deg)',
+          boxShadow: 'inset -10px 0 25px rgba(0,0,0,0.4), 0 8px 30px rgba(109,40,217,0.3)',
+        }}/>
+        {/* Yellow slide — bottom */}
+        <div style={{
+          position: 'absolute', right: '-5%', bottom: '5%',
+          width: '80%', height: '35%',
+          background: 'linear-gradient(180deg, #f59e0b 0%, #d97706 50%, #b45309 100%)',
+          borderRadius: '40% 40% 0 0 / 20% 20% 0 0',
+          transform: 'rotate(2deg)',
+          boxShadow: 'inset -8px 0 20px rgba(0,0,0,0.3), 0 -5px 20px rgba(245,158,11,0.2)',
+        }}/>
+        {/* Support poles */}
+        {[15, 35, 55, 72].map((left, i) => (
+          <div key={i} style={{
+            position: 'absolute', left: `${left}%`, top: '10%',
+            width: 6, height: '85%',
+            background: 'linear-gradient(90deg, #9ca3af, #6b7280, #9ca3af)',
+            borderRadius: 3,
+          }}/>
+        ))}
+      </div>
+
+      {/* Left overlay gradient */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(to right, rgba(45,27,78,0.85) 0%, rgba(45,27,78,0.55) 45%, transparent 100%)',
+      }}/>
+
+      {/* Header bar */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: 36,
+        background: 'rgba(45,27,78,0.97)',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 14px',
+      }}>
+        {/* Logo circle */}
+        <div style={{
+          width: 26, height: 26, borderRadius: '50%',
+          background: 'linear-gradient(135deg, #7c6ba6, #c9a961)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255,255,255,0.3)' }}/>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* ET button */}
+          <div style={{
+            border: '1.5px solid #c9a961', borderRadius: 14, padding: '2px 8px',
+            color: 'white', fontSize: 9, fontWeight: 700,
+          }}>ET ▼</div>
+          {/* Burger */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 3, padding: '2px 4px' }}>
+            {[0,1,2].map(i => (
+              <div key={i} style={{ width: 16, height: 2, background: '#c9a961', borderRadius: 1 }}/>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Hero content */}
+      <div style={{
+        position: 'absolute', left: 14, right: '42%', top: 46,
+        bottom: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center',
+      }}>
+        {/* Big title */}
+        <div style={{
+          fontSize: 13, fontWeight: 900, color: 'white',
+          textTransform: 'uppercase', letterSpacing: 1.5,
+          marginBottom: 10, lineHeight: 1.1,
+          textShadow: '1px 1px 6px rgba(0,0,0,0.6)',
+        }}>
+          ATLANTIS H2O AQUAPARK
+        </div>
+
+        {/* Glass card */}
+        <div style={{
+          background: 'rgba(255,255,255,0.1)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.2)',
+          borderRadius: 12,
+          padding: '12px 14px',
+        }}>
+          <div style={{
+            fontSize: 10, fontWeight: 700, color: 'white',
+            lineHeight: 1.4, marginBottom: 6,
+          }}>
+            Mugavus ja lõõgastus<br/>veekeskuse kõrval
+          </div>
+          <div style={{
+            fontSize: 7.5, color: 'rgba(255,255,255,0.85)',
+            lineHeight: 1.5, marginBottom: 10,
+          }}>
+            Broneeri majutus ja naudi veemõnusid ning sauna
+          </div>
+          {/* Gold button */}
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: 'linear-gradient(135deg, #c9a961 0%, #e6c876 50%, #c9a961 100%)',
+            color: '#1a0f2e', padding: '6px 14px', borderRadius: 20,
+            fontSize: 7.5, fontWeight: 800, textTransform: 'uppercase',
+            letterSpacing: 0.8,
+            boxShadow: '0 4px 12px rgba(201,169,97,0.5)',
+          }}>
+            AVA HINNAKIRI →
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Home() {
   const [lang, setLang] = useState<Lang>('ru')
   const [menuOpen, setMenuOpen] = useState(false)
@@ -30,7 +180,6 @@ export default function Home() {
     return () => { document.body.style.overflow = '' }
   }, [menuOpen, lightbox])
 
-  // Close lightbox on Escape key
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightbox(null) }
     window.addEventListener('keydown', handleKey)
@@ -80,30 +229,57 @@ export default function Home() {
       title: 'ManuFarm', industry: c('Металл', 'Metall', 'Metal'),
       desc: c('Лендинг с каталогом продукции', 'Maandumisleht tootekataloogiga', 'Landing page with product catalog'),
       tags: ['Landing Page', 'B2B'], link: 'https://www.manufarm.ee', days: 5,
-      accent: '#ff6b00',
+      accent: '#ff6b00', useIframe: true,
     },
     {
       title: 'Florista', industry: c('Цветы', 'Lilled', 'Flowers'),
       desc: c('Бизнес-сайт со страницами услуг', 'Äriveebileht teenuselehtedega', 'Business site with service pages'),
       tags: ['Business Site', 'Local'], link: 'https://flower-shop-simple.vercel.app', days: 8,
-      accent: '#e879f9',
+      accent: '#e879f9', useIframe: true,
     },
     {
       title: 'Aquapark H2O', industry: c('Аквапарк', 'Veekeskus', 'Aquapark'),
       desc: c('E-commerce с интеграцией оплаты', 'E-pood maksete integratsiooniga', 'E-commerce with payment integration'),
       tags: ['E-commerce', 'Booking'], link: 'https://aquapark-ee.vercel.app', days: 12,
-      accent: '#f5c842',
+      accent: '#f5c842', useIframe: false,
     },
     {
       title: c('Юлия Петров', 'Julia Petrov', 'Julia Petrov'), industry: c('Нутрициология', 'Toitumine', 'Nutrition'),
       desc: c('Личный бренд с отзывами и мультиязычностью', 'Isiklik bränd arvustuste ja mitmekeelsusega', 'Personal brand with reviews & multilingual'),
       tags: ['Personal Brand', 'Multilingual'], link: 'https://nutritsiolog-2.vercel.app', days: 10,
-      accent: '#4ade80',
+      accent: '#4ade80', useIframe: true,
     },
   ]
 
   return (
     <>
+      {/* Responsive styles injected once */}
+      <style>{`
+        @media (max-width: 768px) {
+          .project-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .project-preview {
+            height: 180px !important;
+          }
+          .contact-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+        @media (min-width: 769px) and (max-width: 1100px) {
+          .project-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+        }
+        @media (min-width: 1101px) {
+          .project-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+        }
+        .preview-hint { opacity: 0 !important; }
+        .project-card:hover .preview-hint { opacity: 1 !important; }
+      `}</style>
+
       {/* ── NAVBAR ── */}
       <header style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
@@ -196,7 +372,6 @@ export default function Home() {
               display: 'flex', flexDirection: 'column',
             }}
           >
-            {/* Browser chrome bar */}
             <div style={{
               height: 46, background: 'rgba(8,13,24,0.98)',
               borderBottom: '1px solid rgba(255,255,255,0.06)',
@@ -349,7 +524,6 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* Solution side */}
               <div>
                 <span className="section-label" style={{ marginBottom: 24, display: 'inline-flex' }}>
                   {c('Решение', 'Lahendus', 'Solution')}
@@ -479,13 +653,20 @@ export default function Home() {
               </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: 22 }}>
+            {/*
+              FIX 1 + 3: 2-column grid on desktop, 1-column on mobile.
+              className="project-grid" is handled by the <style> block at top.
+            */}
+            <div
+              className="project-grid"
+              style={{ display: 'grid', gap: 24 }}
+            >
               {projects.map((project, i) => (
                 <div
                   key={i}
-                  className="card"
+                  className={`card project-card`}
                   onClick={() => setLightbox({ link: project.link, title: project.title })}
-                  style={{ cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
+                  style={{ cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s', overflow: 'hidden' }}
                   onMouseEnter={e => {
                     e.currentTarget.style.transform = 'translateY(-4px)'
                     e.currentTarget.style.boxShadow = `0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px ${project.accent}33`
@@ -495,27 +676,47 @@ export default function Home() {
                     e.currentTarget.style.boxShadow = ''
                   }}
                 >
-                  {/* iframe preview */}
-                  <div style={{ width: '100%', height: 240, borderRadius: '18px 18px 0 0', position: 'relative', overflow: 'hidden', background: '#080d18' }}>
-                    {/* iframe scaled down */}
-                    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-                      <iframe
-                        src={project.link}
-                        style={{
-                          width: '200%',
-                          height: '200%',
-                          border: 'none',
-                          transform: 'scale(0.5)',
-                          transformOrigin: 'top left',
-                          pointerEvents: 'none',
-                        }}
-                        loading="lazy"
-                        title={project.title}
-                        sandbox="allow-scripts allow-same-origin"
-                      />
-                    </div>
+                  {/*
+                    FIX 2: Preview container.
+                    - overflow: hidden on wrapper guarantees iframe never bleeds out
+                    - FIX 4: className="project-preview" for mobile height via media query
+                  */}
+                  <div
+                    className="project-preview"
+                    style={{
+                      width: '100%',
+                      height: 260,
+                      borderRadius: '18px 18px 0 0',
+                      position: 'relative',
+                      overflow: 'hidden',           /* ← FIX: содержит iframe строго внутри */
+                      background: project.useIframe ? '#080d18' : 'transparent',
+                    }}
+                  >
+                    {project.useIframe ? (
+                      /* iframe preview — scaled down, clipped by parent overflow:hidden */
+                      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+                        <iframe
+                          src={project.link}
+                          style={{
+                            width: '200%',
+                            height: '200%',
+                            border: 'none',
+                            transform: 'scale(0.5)',
+                            transformOrigin: 'top left',
+                            pointerEvents: 'none',
+                            display: 'block',      /* ← FIX: убирает inline baseline gap */
+                          }}
+                          loading="lazy"
+                          title={project.title}
+                          sandbox="allow-scripts allow-same-origin"
+                        />
+                      </div>
+                    ) : (
+                      /* FIX: Aquapark кастомный превью 1:1 */
+                      <AquaparkHeroPreview />
+                    )}
 
-                    {/* Overlay gradient to blend bottom */}
+                    {/* Bottom gradient */}
                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 60, background: 'linear-gradient(to bottom, transparent, rgba(8,13,24,0.6))', pointerEvents: 'none' }}/>
 
                     {/* Industry badge */}
@@ -530,8 +731,8 @@ export default function Home() {
                       </span>
                     </div>
 
-                    {/* Click to open hint */}
-                    <div style={{ position: 'absolute', top: 12, left: 12, opacity: 0, transition: 'opacity 0.2s' }} className="preview-hint">
+                    {/* Click hint */}
+                    <div className="preview-hint" style={{ position: 'absolute', top: 12, left: 12, transition: 'opacity 0.2s' }}>
                       <span style={{ color: 'white', fontSize: 11, background: 'rgba(79,156,249,0.7)', backdropFilter: 'blur(8px)', padding: '3px 10px', borderRadius: 100, fontWeight: 600 }}>
                         {c('Открыть', 'Ava', 'Open')} ↗
                       </span>
@@ -721,7 +922,10 @@ export default function Home() {
 
         {/* ── CONTACT ── */}
         <section id="contact" style={{ padding: '96px 24px', background: 'var(--bg-light)' }}>
-          <div style={{ maxWidth: 1160, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: 56, alignItems: 'start' }}>
+          <div
+            className="contact-grid"
+            style={{ maxWidth: 1160, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: 56, alignItems: 'start' }}
+          >
             <div>
               <span className="section-label" style={{ marginBottom: 24, display: 'inline-flex' }}>
                 {c('Связаться', 'Võtke ühendust', 'Contact')}
