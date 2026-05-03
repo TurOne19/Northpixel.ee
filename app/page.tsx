@@ -583,7 +583,13 @@ export default function Home() {
                   <div
                     key={i}
                     className="card project-card"
-                    onClick={() => setLightbox({ link: project.link, title: project.title })}
+                    onClick={() => {
+  if (project.useIframe) {
+    setLightbox({ link: project.link, title: project.title })
+  } else {
+    window.open(project.link, '_blank', 'noopener,noreferrer')
+  }
+}}
                     style={{
                       gridColumn,
                       cursor: 'pointer',
