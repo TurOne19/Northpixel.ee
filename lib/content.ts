@@ -83,6 +83,7 @@ export const locales: Record<Lang, LocaleContent> = {
           { title: "ManuFarm", industry: "Metal", result: "Modern landing page with product catalog. Delivered in 5 days.", tags: ["Landing Page", "E-commerce"], link: "https://www.manufarm.ee" },
           { title: "Florista", industry: "Flowers", result: "Professional business website with service pages and blog. 8-day delivery.", tags: ["Business Site", "Consulting"], link: "https://flower-shop-simple.vercel.app" },
           { title: "Aquapark H2O", industry: "Aquapark", result: "E-commerce store with payment integration. Launched in 12 days.", tags: ["E-commerce", "Retail"], link: "https://aquapark-ee.vercel.app" },
+          { title: "Julia Petrov", industry: "Nutrition", result: "Personal brand site for a nutritionist with admin panel, reviews system and multilingual support. Delivered in 10 days.", tags: ["Personal Brand", "Multilingual"], link: "https://nutritsiolog-2.vercel.app" },
         ],
       },
       pricingPlans: {
@@ -196,6 +197,7 @@ export const locales: Record<Lang, LocaleContent> = {
           { title: "ManuFarm", industry: "Металл", result: "Современный лендинг с каталогом продукции. Сдан за 5 дней.", tags: ["Лендинг", "E-commerce"], link: "https://www.manufarm.ee" },
           { title: "Florista", industry: "Цветы", result: "Профессиональный бизнес-сайт со страницами услуг и блогом. Сдан за 8 дней.", tags: ["Бизнес-сайт", "Консалтинг"], link: "https://flower-shop-simple.vercel.app" },
           { title: "Aquapark H2O", industry: "Аквапарк", result: "Интернет-магазин с интеграцией оплаты. Запущен за 12 дней.", tags: ["E-commerce", "Ритейл"], link: "https://aquapark-ee.vercel.app" },
+          { title: "Юлия Петров", industry: "Нутрициология", result: "Сайт личного бренда нутрициолога с админкой, системой отзывов и мультиязычностью. Сдан за 10 дней.", tags: ["Личный бренд", "Мультиязычный"], link: "https://nutritsiolog-2.vercel.app" },
         ],
       },
       pricingPlans: {
@@ -297,6 +299,7 @@ export const locales: Record<Lang, LocaleContent> = {
           { title: "ManuFarm", industry: "Metall", result: "Kaasaegne maandumisleht tootekataloogiga. Tarnitud 5 päevaga.", tags: ["Maandumisleht", "E-kaubandus"], link: "https://www.manufarm.ee" },
           { title: "Florista", industry: "Lilled", result: "Professionaalne äriveebileht teenuselehtede ja blogiga. 8-päevane tarnimine.", tags: ["Äriveebileht", "Konsultatsioon"], link: "https://flower-shop-simple.vercel.app" },
           { title: "Aquapark H2O", industry: "Veekeskus", result: "E-pood makse integratsiooniga. Käivitatud 12 päevaga.", tags: ["E-kaubandus", "Jaekaubandus"], link: "https://aquapark-ee.vercel.app" },
+          { title: "Julia Petrov", industry: "Toitumine", result: "Isikliku brändi sait toitumisnõustajale adminpaneeliga, arvustuste süsteemiga ja mitmekeelsusega. Tarnitud 10 päevaga.", tags: ["Isiklik bränd", "Mitmekeelne"], link: "https://nutritsiolog-2.vercel.app" },
         ],
       },
       pricingPlans: {

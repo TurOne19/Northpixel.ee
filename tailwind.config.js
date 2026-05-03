@@ -7,15 +7,9 @@ module.exports = {
   ],
   theme: {
     extend: {
-      colors: {
-        bg: '#0a0f1e',
-        'bg-light': '#111827',
-        accent: '#06b6d4',
-        'accent-hover': '#0891b2',
-      },
       fontFamily: {
-        display: ['var(--font-syne)', 'sans-serif'],
-        body: ['var(--font-dm-sans)', 'sans-serif'],
+        display: ['var(--font-inter)', 'sans-serif'],
+        body: ['var(--font-inter)', 'sans-serif'],
       },
     },
   },
