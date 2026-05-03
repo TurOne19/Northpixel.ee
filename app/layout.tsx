@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, Playfair_Display } from 'next/font/google'
 import './globals.css'
+
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
   weight: ['300', '400', '500', '600', '700'],
@@ -13,10 +14,12 @@ const playfair = Playfair_Display({
   variable: '--font-playfair',
   display: 'swap',
 })
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
 }
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://northpixel.ee'),
   title: 'NorthPixel — сайты и лендинги для бизнеса за 7 дней',
@@ -45,6 +48,7 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://northpixel.ee' },
   robots: { index: true, follow: true },
 }
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
