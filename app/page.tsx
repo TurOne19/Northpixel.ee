@@ -9,6 +9,7 @@ export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [formState, setFormState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [formData, setFormData] = useState({ name: '', contact: '', business: '', budget: '', message: '' })
+  const [lightbox, setLightbox] = useState<{ link: string; title: string } | null>(null)
   const t = locales[lang]
 
   useEffect(() => {
@@ -25,9 +26,16 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : ''
+    document.body.style.overflow = (menuOpen || lightbox) ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
-  }, [menuOpen])
+  }, [menuOpen, lightbox])
+
+  // Close lightbox on Escape key
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightbox(null) }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [])
 
   const scrollTo = (id: string) => {
     setMenuOpen(false)
@@ -66,6 +74,33 @@ export default function Home() {
   ]
 
   const c = (ru: string, et: string, en: string) => lang === 'ru' ? ru : lang === 'et' ? et : en
+
+  const projects = [
+    {
+      title: 'ManuFarm', industry: c('Металл', 'Metall', 'Metal'),
+      desc: c('Лендинг с каталогом продукции', 'Maandumisleht tootekataloogiga', 'Landing page with product catalog'),
+      tags: ['Landing Page', 'B2B'], link: 'https://www.manufarm.ee', days: 5,
+      accent: '#ff6b00',
+    },
+    {
+      title: 'Florista', industry: c('Цветы', 'Lilled', 'Flowers'),
+      desc: c('Бизнес-сайт со страницами услуг', 'Äriveebileht teenuselehtedega', 'Business site with service pages'),
+      tags: ['Business Site', 'Local'], link: 'https://flower-shop-simple.vercel.app', days: 8,
+      accent: '#e879f9',
+    },
+    {
+      title: 'Aquapark H2O', industry: c('Аквапарк', 'Veekeskus', 'Aquapark'),
+      desc: c('E-commerce с интеграцией оплаты', 'E-pood maksete integratsiooniga', 'E-commerce with payment integration'),
+      tags: ['E-commerce', 'Booking'], link: 'https://aquapark-ee.vercel.app', days: 12,
+      accent: '#f5c842',
+    },
+    {
+      title: c('Юлия Петров', 'Julia Petrov', 'Julia Petrov'), industry: c('Нутрициология', 'Toitumine', 'Nutrition'),
+      desc: c('Личный бренд с отзывами и мультиязычностью', 'Isiklik bränd arvustuste ja mitmekeelsusega', 'Personal brand with reviews & multilingual'),
+      tags: ['Personal Brand', 'Multilingual'], link: 'https://nutritsiolog-2.vercel.app', days: 10,
+      accent: '#4ade80',
+    },
+  ]
 
   return (
     <>
@@ -134,6 +169,74 @@ export default function Home() {
             {(['ru', 'et', 'en'] as Lang[]).map(l => (
               <button key={l} onClick={() => changeLang(l)} style={{ background: lang === l ? 'var(--accent)' : 'rgba(255,255,255,0.07)', color: 'white', border: 'none', cursor: 'pointer', padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, textTransform: 'uppercase' }}>{l}</button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── LIGHTBOX ── */}
+      {lightbox && (
+        <div
+          onClick={() => setLightbox(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.94)', backdropFilter: 'blur(16px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '16px',
+            animation: 'fadeIn 0.2s ease',
+          }}
+        >
+          <style>{`@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }`}</style>
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              position: 'relative', width: '100%', maxWidth: 1200,
+              height: '90vh', borderRadius: 18, overflow: 'hidden',
+              background: '#080d18', border: '1px solid rgba(255,255,255,0.08)',
+              boxShadow: '0 40px 120px rgba(0,0,0,0.8)',
+              display: 'flex', flexDirection: 'column',
+            }}
+          >
+            {/* Browser chrome bar */}
+            <div style={{
+              height: 46, background: 'rgba(8,13,24,0.98)',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              display: 'flex', alignItems: 'center',
+              padding: '0 16px', gap: 12, flexShrink: 0,
+            }}>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5f57' }}/>
+                <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#febc2e' }}/>
+                <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#28c840' }}/>
+              </div>
+              <div style={{
+                flex: 1, background: 'rgba(255,255,255,0.05)', borderRadius: 8,
+                height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-inter)',
+                border: '1px solid rgba(255,255,255,0.06)',
+              }}>
+                🔒 {lightbox.link.replace('https://', '')}
+              </div>
+              <button
+                onClick={() => setLightbox(null)}
+                style={{
+                  background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: 8, color: 'white', cursor: 'pointer',
+                  width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'background 0.2s', flexShrink: 0,
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.12)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            <iframe
+              src={lightbox.link}
+              style={{ flex: 1, width: '100%', border: 'none' }}
+              title={lightbox.title}
+            />
           </div>
         </div>
       )}
@@ -375,98 +478,78 @@ export default function Home() {
                 {c('Реальные и концептуальные проекты, которые показывают наш подход.', 'Reaalsed ja kontseptuaalsed projektid, mis näitavad meie lähenemist.', 'Real and conceptual projects that show our approach.')}
               </p>
             </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: 22 }}>
-              {[
-                {
-                  title: 'ManuFarm', industry: c('Металл', 'Metall', 'Metal'),
-                  desc: c('Лендинг с каталогом продукции', 'Maandumisleht tootekataloogiga', 'Landing page with product catalog'),
-                  tags: ['Landing Page', 'B2B'], link: 'https://www.manufarm.ee', days: 5,
-                  bg: 'linear-gradient(135deg, #1a0a00 0%, #2d1200 40%, #1a0800 100%)',
-                  accent: '#ff6b00',
-                  preview: (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24 }}>
-                      <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'white', opacity: 0.9 }}>MANUFARM</div>
-                      <div style={{ fontSize: 22, fontWeight: 900, color: '#ff6b00', textAlign: 'center', lineHeight: 1.2 }}>Металлоконструкции<br/>нового уровня</div>
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textAlign: 'center', maxWidth: 200 }}>Проектирование, производство и установка</div>
-                      <div style={{ background: '#ff6b00', color: 'white', fontSize: 11, fontWeight: 700, padding: '6px 18px', borderRadius: 6, marginTop: 4 }}>Ещё работаем</div>
+              {projects.map((project, i) => (
+                <div
+                  key={i}
+                  className="card"
+                  onClick={() => setLightbox({ link: project.link, title: project.title })}
+                  style={{ cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'translateY(-4px)'
+                    e.currentTarget.style.boxShadow = `0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px ${project.accent}33`
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = ''
+                  }}
+                >
+                  {/* iframe preview */}
+                  <div style={{ width: '100%', height: 240, borderRadius: '18px 18px 0 0', position: 'relative', overflow: 'hidden', background: '#080d18' }}>
+                    {/* iframe scaled down */}
+                    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+                      <iframe
+                        src={project.link}
+                        style={{
+                          width: '200%',
+                          height: '200%',
+                          border: 'none',
+                          transform: 'scale(0.5)',
+                          transformOrigin: 'top left',
+                          pointerEvents: 'none',
+                        }}
+                        loading="lazy"
+                        title={project.title}
+                        sandbox="allow-scripts allow-same-origin"
+                      />
                     </div>
-                  )
-                },
-                {
-                  title: 'Florista', industry: c('Цветы', 'Lilled', 'Flowers'),
-                  desc: c('Бизнес-сайт со страницами услуг', 'Äriveebileht teenuselehtedega', 'Business site with service pages'),
-                  tags: ['Business Site', 'Local'], link: 'https://flower-shop-simple.vercel.app', days: 8,
-                  bg: 'linear-gradient(135deg, #1a0520 0%, #2d0a3d 40%, #1a0520 100%)',
-                  accent: '#e879f9',
-                  preview: (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 24 }}>
-                      <div style={{ fontSize: 13, color: '#e879f9', fontWeight: 600 }}>🌸 Florista</div>
-                      <div style={{ fontSize: 24, fontWeight: 900, color: 'white', textAlign: 'center', lineHeight: 1.2 }}>Цветы, которые<br/>говорят за вас</div>
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textAlign: 'center' }}>Свежие композиции с доставкой по Таллину</div>
-                      <div style={{ background: '#e879f9', color: 'white', fontSize: 11, fontWeight: 700, padding: '6px 18px', borderRadius: 6 }}>Заказать букет</div>
+
+                    {/* Overlay gradient to blend bottom */}
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 60, background: 'linear-gradient(to bottom, transparent, rgba(8,13,24,0.6))', pointerEvents: 'none' }}/>
+
+                    {/* Industry badge */}
+                    <div style={{ position: 'absolute', top: 12, right: 12 }}>
+                      <span style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', border: `1px solid ${project.accent}55`, color: project.accent, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 100 }}>{project.industry}</span>
                     </div>
-                  )
-                },
-                {
-                  title: 'Aquapark H2O', industry: c('Аквапарк', 'Veekeskus', 'Aquapark'),
-                  desc: c('E-commerce с интеграцией оплаты', 'E-pood maksete integratsiooniga', 'E-commerce with payment integration'),
-                  tags: ['E-commerce', 'Booking'], link: 'https://aquapark-ee.vercel.app', days: 12,
-                  bg: 'linear-gradient(135deg, #0a1628 0%, #0d2040 40%, #0a1628 100%)',
-                  accent: '#f5c842',
-                  preview: (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 24 }}>
-                      <div style={{ fontSize: 11, color: '#f5c842', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Aquapark H2O</div>
-                      <div style={{ fontSize: 20, fontWeight: 900, color: 'white', textAlign: 'center', lineHeight: 1.2 }}>Водное приключение<br/>для всей семьи</div>
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textAlign: 'center' }}>Билеты онлайн · Лучшие цены</div>
-                      <div style={{ background: '#f5c842', color: '#0a1628', fontSize: 11, fontWeight: 800, padding: '6px 18px', borderRadius: 6 }}>Купить билет</div>
-                    </div>
-                  )
-                },
-                {
-                  title: c('Юлия Петров', 'Julia Petrov', 'Julia Petrov'), industry: c('Нутрициология', 'Toitumine', 'Nutrition'),
-                  desc: c('Личный бренд с отзывами и мультиязычностью', 'Isiklik bränd arvustuste ja mitmekeelsusega', 'Personal brand with reviews & multilingual'),
-                  tags: ['Personal Brand', 'Multilingual'], link: 'https://nutritsiolog-2.vercel.app', days: 10,
-                  bg: 'linear-gradient(135deg, #0d1f0d 0%, #162916 40%, #0d1f0d 100%)',
-                  accent: '#4ade80',
-                  preview: (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 24 }}>
-                      <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(74,222,128,0.15)', border: '2px solid rgba(74,222,128,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>👩</div>
-                      <div style={{ fontSize: 18, fontWeight: 800, color: 'white', textAlign: 'center' }}>Юлия Петров</div>
-                      <div style={{ fontSize: 12, color: '#4ade80', fontWeight: 600 }}>Нутрициолог</div>
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', textAlign: 'center', maxWidth: 180 }}>Персональный подход к питанию и здоровью</div>
-                    </div>
-                  )
-                },
-              ].map((project, i) => (
-                <a key={i} href={project.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }} className="card">
-                  <div>
-                    {/* Static brand preview */}
-                    <div style={{ width: '100%', height: 210, borderRadius: '18px 18px 0 0', position: 'relative', overflow: 'hidden', background: project.bg }}>
-                      {/* Grid lines decoration */}
-                      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '40px 40px' }}/>
-                      {/* Glow */}
-                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 200, height: 200, borderRadius: '50%', background: `radial-gradient(circle, ${project.accent}22 0%, transparent 70%)`, pointerEvents: 'none' }}/>
-                      {project.preview}
-                      <div style={{ position: 'absolute', top: 12, right: 12 }}>
-                        <span style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', border: `1px solid ${project.accent}44`, color: project.accent, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 100 }}>{project.industry}</span>
-                      </div>
-                      <div style={{ position: 'absolute', bottom: 12, left: 12, color: 'rgba(255,255,255,0.6)', fontSize: 11, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', padding: '3px 10px', borderRadius: 100 }}>
+
+                    {/* Days badge */}
+                    <div style={{ position: 'absolute', bottom: 12, left: 12 }}>
+                      <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', padding: '3px 10px', borderRadius: 100 }}>
                         ⏱ {project.days} {c('дней', 'päeva', 'days')}
-                      </div>
+                      </span>
                     </div>
-                    <div style={{ padding: '22px 26px 26px' }}>
-                      <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6, letterSpacing: '-0.01em' }}>{project.title}</h3>
-                      <p style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.6, marginBottom: 14 }}>{project.desc}</p>
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
-                        {project.tags.map((tag: string, j: number) => <span key={j} className="tag">{tag}</span>)}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--accent)', fontSize: 13, fontWeight: 600 }}>
-                        {c('Открыть проект', 'Ava projekt', 'Open project')}
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
-                      </div>
+
+                    {/* Click to open hint */}
+                    <div style={{ position: 'absolute', top: 12, left: 12, opacity: 0, transition: 'opacity 0.2s' }} className="preview-hint">
+                      <span style={{ color: 'white', fontSize: 11, background: 'rgba(79,156,249,0.7)', backdropFilter: 'blur(8px)', padding: '3px 10px', borderRadius: 100, fontWeight: 600 }}>
+                        {c('Открыть', 'Ava', 'Open')} ↗
+                      </span>
                     </div>
                   </div>
-                </a>
+
+                  <div style={{ padding: '22px 26px 26px' }}>
+                    <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6, letterSpacing: '-0.01em' }}>{project.title}</h3>
+                    <p style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.6, marginBottom: 14 }}>{project.desc}</p>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
+                      {project.tags.map((tag: string, j: number) => <span key={j} className="tag">{tag}</span>)}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--accent)', fontSize: 13, fontWeight: 600 }}>
+                      {c('Открыть проект', 'Ava projekt', 'Open project')}
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -534,7 +617,6 @@ export default function Home() {
                     c('Доп. страницы — по договорённости', 'Lisaleheküljed — kokkuleppel', 'Extra pages — by agreement'),
                   ], featured: false,
                 },
-
               ].map((plan, i) => (
                 <div key={i} className={`card ${plan.featured ? 'featured-card' : ''}`} style={{ padding: '28px' }}>
                   {plan.badge && (
@@ -613,7 +695,7 @@ export default function Home() {
                 },
                 {
                   q: c('Что происходит после запуска?', 'Mis juhtub pärast käivitamist?', 'What happens after launch?'),
-                  a: c('Сайт полностью готов. Вы получаете доступ и можете принимать заявки.', 'Veebileht on täielikult valmis. Saate juurdepääsu ja võite päringuid vastu võtta.', 'The website is fully ready. You get access and can start receiving leads.'),
+                  a: c('Сайт полностью готов. Вы получаете доступ и можете принимать заявки.', 'Veebileht on täielikult valmis. Saate juurdepääsu ja võite päringuid vastu võtma.', 'The website is fully ready. You get access and can start receiving leads.'),
                 },
               ].map((item, i) => (
                 <div key={i} className={`faq-item ${openFaq === i ? 'open' : ''}`}>
