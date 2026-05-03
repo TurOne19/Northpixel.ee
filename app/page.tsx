@@ -212,12 +212,7 @@ export default function Home() {
       }}>
         <div style={{ maxWidth: 1160, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
-              <rect width="32" height="32" rx="8" fill="url(#lg1)"/>
-              <path d="M8 22V10l8 8 8-8v12" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-              <defs><linearGradient id="lg1" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse"><stop stopColor="#4f9cf9"/><stop offset="1" stopColor="#3b82f6"/></linearGradient></defs>
-            </svg>
-            <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: 17, color: 'white', letterSpacing: '-0.02em' }}>NorthPixel</span>
+            <img src="/logo.svg" alt="NorthPixel" style={{ height: 36, width: 'auto' }} />
           </div>
 
           <nav className="hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
@@ -941,12 +936,7 @@ export default function Home() {
           <div style={{ maxWidth: 1160, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 20 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
-                  <defs><linearGradient id="lf" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse"><stop stopColor="#4f9cf9"/><stop offset="1" stopColor="#3b82f6"/></linearGradient></defs>
-                  <rect width="32" height="32" rx="8" fill="url(#lf)"/>
-                  <path d="M8 22V10l8 8 8-8v12" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: 15, color: 'white', letterSpacing: '-0.02em' }}>NorthPixel</span>
+                <img src="/logo.svg" alt="NorthPixel" style={{ height: 30, width: 'auto' }} />
               </div>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', maxWidth: 320, lineHeight: 1.6 }}>
                 {c('Создаём современные сайты для бизнеса с фокусом на результат.', 'Loome kaasaegseid veebilehti äridele fookusega tulemusele.', 'We create modern websites for business with a focus on results.')}
