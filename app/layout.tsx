@@ -41,9 +41,9 @@ export const metadata: Metadata = {
     images: ['/og-image.png'],
   },
   icons: {
-    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
-    shortcut: '/favicon.svg',
-    apple: '/favicon.svg',
+    icon: [{ url: '/favicon.png', type: 'image/svg+xml' }],
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
   },
   alternates: { canonical: 'https://northpixel.ee' },
   robots: { index: true, follow: true },
