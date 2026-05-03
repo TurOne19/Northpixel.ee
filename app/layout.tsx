@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     images: ['/og-image.png'],
   },
   icons: {
-  icon: [{ url: '/favicon.png', type: 'image/svg+xml' }],
+  icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
   shortcut: '/favicon.svg',
   apple: '/favicon.svg',
 },
