@@ -361,9 +361,9 @@ export default function Home() {
 
               <p style={{ fontSize: 'clamp(16px, 1.8vw, 19px)', color: 'var(--text-soft)', lineHeight: 1.75, maxWidth: 580, marginBottom: 14 }}>
                 {c(
-                  'Создаём современные лендинги с чёткой логикой и фокусом на заявки — от идеи до запуска за 7 дней.',
-                  'Loome kaasaegseid maandumislehti selge loogika ja fookusega päringutele — ideest käivitamiseni 7 päevaga.',
-                  'We build modern landing pages with clear logic and focus on leads — from idea to launch in 7 days.'
+                  'Создаём современные лендинги с чёткой логикой и фокусом на заявки - от идеи до запуска за 7 дней.',
+                  'Loome kaasaegseid maandumislehti selge loogika ja fookusega päringutele - ideest käivitamiseni 7 päevaga.',
+                  'We build modern landing pages with clear logic and focus on leads - from idea to launch in 7 days.'
                 )}
               </p>
               <p style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 40, fontStyle: 'italic' }}>
@@ -423,7 +423,7 @@ export default function Home() {
                   {c('Почему сайт не даёт результат?', 'Miks veebileht ei anna tulemusi?', 'Why is your website not working?')}
                 </h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: 17, lineHeight: 1.7, marginBottom: 32 }}>
-                  {c('Чаще всего дело не в рекламе — а в том, как выстроен сам сайт.', 'Enamasti pole probleem reklaamis — vaid selles, kuidas veebileht on üles ehitatud.', 'Most often it\'s not the ads — it\'s how the website itself is built.')}
+                  {c('Чаще всего дело не в рекламе - а в том, как выстроен сам сайт.', 'Enamasti pole probleem reklaamis - vaid selles, kuidas veebileht on üles ehitatud.', 'Most often it\'s not the ads - it\'s how the website itself is built.')}
                 </p>
                 <div style={{ borderRadius: 14, border: '1px solid rgba(239,68,68,0.15)', overflow: 'hidden', background: 'rgba(239,68,68,0.02)' }}>
                   {[
@@ -442,7 +442,7 @@ export default function Home() {
                   ))}
                 </div>
                 <p style={{ marginTop: 20, fontSize: 14, color: 'var(--text-muted)', fontStyle: 'italic', borderLeft: '2px solid rgba(239,68,68,0.3)', paddingLeft: 14 }}>
-                  {c('В результате — вы теряете клиентов, которые могли бы стать вашими.', 'Tulemusena kaotate kliente, kes oleksid võinud teie omad olla.', 'As a result — you\'re losing clients who could have been yours.')}
+                  {c('В результате - вы теряете клиентов, которые могли бы стать вашими.', 'Tulemusena kaotate kliente, kes oleksid võinud teie omad olla.', 'As a result - you\'re losing clients who could have been yours.')}
                 </p>
               </div>
 
@@ -451,7 +451,7 @@ export default function Home() {
                   {c('Решение', 'Lahendus', 'Solution')}
                 </span>
                 <p style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 12 }}>
-                  {c('Хороший сайт — это не просто дизайн. Это система.', 'Hea veebileht ei ole lihtsalt disain. See on süsteem.', 'A good website is not just design. It\'s a system.')}
+                  {c('Хороший сайт - это не просто дизайн. Это система.', 'Hea veebileht ei ole lihtsalt disain. See on süsteem.', 'A good website is not just design. It\'s a system.')}
                 </p>
                 <h2 style={{ fontFamily: 'var(--font-inter)', fontSize: 'clamp(26px, 3.5vw, 38px)', fontWeight: 800, marginBottom: 16, letterSpacing: '-0.02em' }}>
                   {c('Мы создаём сайты, которые работают на результат', 'Loome veebilehti, mis töötavad tulemuste nimel', 'We build websites that work for results')}
@@ -464,7 +464,7 @@ export default function Home() {
                     { icon: '🎯', text: c('Понятная структура, которая раскрывает суть за первые секунды', 'Selge struktuur, mis avab olemuse esimeste sekunditega', 'Clear structure that reveals the essence in seconds') },
                     { icon: '💎', text: c('Современный дизайн, который формирует доверие', 'Kaasaegne disain, mis tekitab usaldust', 'Modern design that builds trust') },
                     { icon: '🛤️', text: c('Продуманный путь клиента от первого экрана до действия', 'Läbimõeldud klienditeekond esimesest ekraanist tegevuseni', 'Thoughtful customer journey from first screen to action') },
-                    { icon: '📱', text: c('Адаптация под телефон — где основная часть аудитории', 'Mobiiliadaptatsioon — kus on põhiosa publikust', 'Mobile-first — where most of your audience is') },
+                    { icon: '📱', text: c('Адаптация под телефон - где основная часть аудитории', 'Mobiiliadaptatsioon - kus on põhiosa publikust', 'Mobile-first - where most of your audience is') },
                   ].map((item, i) => (
                     <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '14px', borderRadius: 12, background: 'rgba(79,156,249,0.03)', border: '1px solid rgba(79,156,249,0.08)' }}>
                       <span style={{ fontSize: 20 }}>{item.icon}</span>
@@ -473,7 +473,7 @@ export default function Home() {
                   ))}
                 </div>
                 <p style={{ marginTop: 20, fontSize: 14, color: 'var(--text-soft)', borderLeft: '2px solid rgba(79,156,249,0.4)', paddingLeft: 14 }}>
-                  {c('Мы создаём не просто сайт — а инструмент, который помогает стабильно привлекать клиентов.', 'Me ei loo lihtsalt veebilehte — vaid tööriista, mis aitab kliente stabiilselt meelitada.', 'We don\'t just build a website — we build a tool that helps consistently attract clients.')}
+                  {c('Мы создаём не просто сайт - а инструмент, который помогает стабильно привлекать клиентов.', 'Me ei loo lihtsalt veebilehte - vaid tööriista, mis aitab kliente stabiilselt meelitada.', 'We don\'t just build a website - we build a tool that helps consistently attract clients.')}
                 </p>
               </div>
             </div>
@@ -520,7 +520,7 @@ export default function Home() {
               ))}
             </div>
             <p style={{ textAlign: 'center', marginTop: 36, color: 'var(--text-soft)', fontSize: 14, fontStyle: 'italic' }}>
-              {c('Вы получаете не просто сайт — а инструмент, который помогает привлекать клиентов.', 'Te saate mitte lihtsalt veebilehe — vaid tööriista, mis aitab kliente meelitada.', 'You get not just a website — but a tool that helps attract clients.')}
+              {c('Вы получаете не просто сайт - а инструмент, который помогает привлекать клиентов.', 'Te saate mitte lihtsalt veebilehe - vaid tööriista, mis aitab kliente meelitada.', 'You get not just a website - but a tool that helps attract clients.')}
             </p>
           </div>
         </section>
@@ -533,10 +533,10 @@ export default function Home() {
                 {c('Процесс', 'Protsess', 'Process')}
               </span>
               <h2 style={{ fontFamily: 'var(--font-inter)', fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 800, marginBottom: 14, letterSpacing: '-0.02em' }}>
-                {c('Простой процесс — без лишних шагов', 'Lihtne protsess — ilma lisasammudeta', 'Simple process — no extra steps')}
+                {c('Простой процесс - без лишних шагов', 'Lihtne protsess - ilma lisasammudeta', 'Simple process - no extra steps')}
               </h2>
               <p style={{ color: 'var(--text-muted)', fontSize: 17, maxWidth: 480, margin: '0 auto' }}>
-                {c('От идеи до запуска — без перегрузки и сложных этапов.', 'Ideest käivitamiseni — ilma ülekoormuse ja keeruliste etappideta.', 'From idea to launch — no overload, no complex stages.')}
+                {c('От идеи до запуска - без перегрузки и сложных этапов.', 'Ideest käivitamiseni - ilma ülekoormuse ja keeruliste etappideta.', 'From idea to launch - no overload, no complex stages.')}
               </p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20 }}>
@@ -690,7 +690,7 @@ export default function Home() {
                 {c('Выберите решение для вашего бизнеса', 'Valige oma äri jaoks lahendus', 'Choose the solution for your business')}
               </h2>
               <p style={{ color: 'var(--text-muted)', fontSize: 17 }}>
-                {c('Всё, что нужно для запуска — уже внутри.', 'Kõik käivitamiseks vajalik on juba sees.', 'Everything you need to launch is already included.')}
+                {c('Всё, что нужно для запуска - уже внутри.', 'Kõik käivitamiseks vajalik on juba sees.', 'Everything you need to launch is already included.')}
               </p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20, alignItems: 'start' }}>
@@ -738,7 +738,7 @@ export default function Home() {
                   features: [
                     c('Логотип: 50€', 'Logo: 50€', 'Logo: 50€'),
                     c('Тексты / копирайтинг: 50€', 'Tekstid / copywriting: 50€', 'Copy / copywriting: 50€'),
-                    c('Доп. страницы — по договорённости', 'Lisaleheküljed — kokkuleppel', 'Extra pages — by agreement'),
+                    c('Доп. страницы - по договорённости', 'Lisaleheküljed - kokkuleppel', 'Extra pages - by agreement'),
                   ], featured: false,
                 },
               ].map((plan, i) => (
@@ -769,7 +769,7 @@ export default function Home() {
             </div>
             <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center', textAlign: 'center' }}>
               <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
-                {c('Не уверены, какой пакет выбрать? Оставьте заявку — подскажем.', 'Pole kindel, millist paketti valida? Jätke päring — anname nõu.', 'Not sure which package to choose? Leave a request — we\'ll advise.')}
+                {c('Не уверены, какой пакет выбрать? Оставьте заявку - подскажем.', 'Pole kindel, millist paketti valida? Jätke päring - anname nõu.', 'Not sure which package to choose? Leave a request - we\'ll advise.')}
                 {' '}<button onClick={() => scrollTo('contact')} style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: 14, fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 3 }}>{c('Оставить заявку →', 'Jäta päring →', 'Get in touch →')}</button>
               </p>
               <p style={{ color: 'var(--text-muted)', fontSize: 12, opacity: 0.7, fontStyle: 'italic' }}>
@@ -799,7 +799,7 @@ export default function Home() {
                 },
                 {
                   q: c('Что от меня нужно для начала?', 'Mida vajate alustamiseks?', 'What do I need to get started?'),
-                  a: c('Краткая информация о вашем бизнесе. Если нет текстов или структуры — поможем.', 'Lühiinfo teie äri kohta. Kui tekste või struktuuri pole — aitame.', 'Brief info about your business. If you don\'t have copy or structure — we\'ll help.'),
+                  a: c('Краткая информация о вашем бизнесе. Если нет текстов или структуры - поможем.', 'Lühiinfo teie äri kohta. Kui tekste või struktuuri pole - aitame.', 'Brief info about your business. If you don\'t have copy or structure - we\'ll help.'),
                 },
                 {
                   q: c('Смогу ли я менять сайт самостоятельно?', 'Kas saan saiti ise muuta?', 'Can I edit the site myself?'),
@@ -857,7 +857,7 @@ export default function Home() {
                 {c('Готовы запустить сайт?', 'Valmis veebilehte käivitama?', 'Ready to launch your website?')}
               </h2>
               <p style={{ color: 'var(--text-muted)', fontSize: 16, lineHeight: 1.75, marginBottom: 36 }}>
-                {c('Оставьте заявку — обсудим ваш проект и предложим подходящее решение.', 'Jätke päring — arutame teie projekti ja pakume sobivat lahendust.', 'Leave a request — we\'ll discuss your project and suggest the right solution.')}
+                {c('Оставьте заявку - обсудим ваш проект и предложим подходящее решение.', 'Jätke päring - arutame teie projekti ja pakume sobivat lahendust.', 'Leave a request - we\'ll discuss your project and suggest the right solution.')}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {[
