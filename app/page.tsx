@@ -942,9 +942,9 @@ export default function Home() {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+                  <defs><linearGradient id="lf" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse"><stop stopColor="#4f9cf9"/><stop offset="1" stopColor="#3b82f6"/></linearGradient></defs>
                   <rect width="32" height="32" rx="8" fill="url(#lf)"/>
                   <path d="M8 22V10l8 8 8-8v12" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <defs><linearGradient id="lf" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse"><stop stopColor="#4f9cf9"/><stop offset="1" stopColor="#3b82f6"/></linearGradient></defs>
                 </svg>
                 <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: 15, color: 'white', letterSpacing: '-0.02em' }}>NorthPixel</span>
               </div>
