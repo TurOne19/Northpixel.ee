@@ -154,11 +154,9 @@ export default function Home() {
               </div>
 
               <h1 style={{ fontFamily: 'var(--font-inter)', fontSize: 'clamp(44px, 7vw, 88px)', fontWeight: 800, lineHeight: 1.05, letterSpacing: '-0.03em', marginBottom: 28, color: 'white' }}>
-                {c(
-                  <>{`Превращаем ваш бизнес\nв `}<span className="highlight">сайт</span>{`, который\nприводит `}<span className="text-accent">клиентов</span></>,
-                  <>{`Loome veebilehe,\nkus `}<span className="text-accent">tulemused</span>{`\nräägivad ise`}</>,
-                  <>{`We turn your business\ninto a `}<span className="highlight">website</span>{` that\nbrings `}<span className="text-accent">clients</span></>
-                )}
+                {lang === 'ru' && <>Превращаем ваш бизнес<br/>в <span className="highlight">сайт</span>, который<br/>приводит <span className="text-accent">клиентов</span></>}
+                {lang === 'et' && <>Loome veebilehe,<br/>kus <span className="text-accent">tulemused</span><br/>räägivad ise</>}
+                {lang === 'en' && <>We turn your business<br/>into a <span className="highlight">website</span> that<br/>brings <span className="text-accent">clients</span></>}
               </h1>
 
               <p style={{ fontSize: 'clamp(16px, 1.8vw, 19px)', color: 'var(--text-soft)', lineHeight: 1.75, maxWidth: 580, marginBottom: 14 }}>
