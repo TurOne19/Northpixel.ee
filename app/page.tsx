@@ -2,14 +2,14 @@
 import { useState, useEffect } from 'react'
 import { brand, locales, Lang } from '@/lib/content'
 
-// ─── Aquapark custom hero preview (1:1 replica of original hero) ──────────────
+// ─── Aquapark hero preview — real background photo ────────────────────────────
 function AquaparkHeroPreview() {
   return (
     <div style={{
       width: '100%', height: '100%', position: 'relative', overflow: 'hidden',
       fontFamily: "'Montserrat', sans-serif",
     }}>
-      {/* Реальное фото как background */}
+      {/* Real photo */}
       <div style={{
         position: 'absolute', inset: 0,
         backgroundImage: 'url(/aquapark-bg.jpg)',
@@ -17,10 +17,10 @@ function AquaparkHeroPreview() {
         backgroundPosition: 'center',
       }}/>
 
-      {/* Фиолетовый оверлей слева как на оригинале */}
+      {/* Purple overlay like original */}
       <div style={{
         position: 'absolute', inset: 0,
-        background: 'linear-gradient(to right, rgba(45,27,78,0.85) 0%, rgba(45,27,78,0.55) 45%, transparent 100%)',
+        background: 'linear-gradient(to right, rgba(45,27,78,0.88) 0%, rgba(45,27,78,0.6) 45%, rgba(45,27,78,0.15) 100%)',
       }}/>
 
       {/* Header bar */}
@@ -81,58 +81,6 @@ function AquaparkHeroPreview() {
             background: 'linear-gradient(135deg, #c9a961 0%, #e6c876 50%, #c9a961 100%)',
             color: '#1a0f2e', padding: '6px 14px', borderRadius: 20,
             fontSize: 7.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8,
-            boxShadow: '0 4px 12px rgba(201,169,97,0.5)',
-          }}>
-            AVA HINNAKIRI →
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-      {/* Hero content */}
-      <div style={{
-        position: 'absolute', left: 14, right: '42%', top: 46,
-        bottom: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center',
-      }}>
-        {/* Big title */}
-        <div style={{
-          fontSize: 13, fontWeight: 900, color: 'white',
-          textTransform: 'uppercase', letterSpacing: 1.5,
-          marginBottom: 10, lineHeight: 1.1,
-          textShadow: '1px 1px 6px rgba(0,0,0,0.6)',
-        }}>
-          ATLANTIS H2O AQUAPARK
-        </div>
-
-        {/* Glass card */}
-        <div style={{
-          background: 'rgba(255,255,255,0.1)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255,255,255,0.2)',
-          borderRadius: 12,
-          padding: '12px 14px',
-        }}>
-          <div style={{
-            fontSize: 10, fontWeight: 700, color: 'white',
-            lineHeight: 1.4, marginBottom: 6,
-          }}>
-            Mugavus ja lõõgastus<br/>veekeskuse kõrval
-          </div>
-          <div style={{
-            fontSize: 7.5, color: 'rgba(255,255,255,0.85)',
-            lineHeight: 1.5, marginBottom: 10,
-          }}>
-            Broneeri majutus ja naudi veemõnusid ning sauna
-          </div>
-          {/* Gold button */}
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: 'linear-gradient(135deg, #c9a961 0%, #e6c876 50%, #c9a961 100%)',
-            color: '#1a0f2e', padding: '6px 14px', borderRadius: 20,
-            fontSize: 7.5, fontWeight: 800, textTransform: 'uppercase',
-            letterSpacing: 0.8,
             boxShadow: '0 4px 12px rgba(201,169,97,0.5)',
           }}>
             AVA HINNAKIRI →
@@ -244,28 +192,11 @@ export default function Home() {
 
   return (
     <>
-      {/* Responsive styles injected once */}
       <style>{`
         @media (max-width: 768px) {
-          .project-grid {
-            grid-template-columns: 1fr !important;
-          }
-          .project-preview {
-            height: 180px !important;
-          }
-          .contact-grid {
-            grid-template-columns: 1fr !important;
-          }
-        }
-        @media (min-width: 769px) and (max-width: 1100px) {
-          .project-grid {
-            grid-template-columns: 1fr 1fr !important;
-          }
-        }
-        @media (min-width: 1101px) {
-          .project-grid {
-            grid-template-columns: 1fr 1fr !important;
-          }
+          .project-card { grid-column: 1 / -1 !important; }
+          .project-preview { height: 180px !important; }
+          .contact-grid { grid-template-columns: 1fr !important; }
         }
         .preview-hint { opacity: 0 !important; }
         .project-card:hover .preview-hint { opacity: 1 !important; }
@@ -644,106 +575,101 @@ export default function Home() {
               </p>
             </div>
 
-            {/*
-              FIX 1 + 3: 2-column grid on desktop, 1-column on mobile.
-              className="project-grid" is handled by the <style> block at top.
-            */}
-<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
-  {projects.map((project, i) => {
-    const gridColumn = i === 0 ? '1 / 3' : i === 1 ? '3' : i === 2 ? '1' : '2 / 4'
-    return (
-    <div
-      key={i}
-      className="card project-card"
-      onClick={() => setLightbox({ link: project.link, title: project.title })}
-      style={{ gridColumn, cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s', overflow: 'hidden' }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.transform = 'translateY(-4px)'
-                    e.currentTarget.style.boxShadow = `0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px ${project.accent}33`
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = ''
-                  }}
-                >
-                  {/*
-                    FIX 2: Preview container.
-                    - overflow: hidden on wrapper guarantees iframe never bleeds out
-                    - FIX 4: className="project-preview" for mobile height via media query
-                  */}
+            {/* ── BENTO GRID: 0=wide(2/3), 1=narrow, 2=narrow, 3=wide(2/3) ── */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+              {projects.map((project, i) => {
+                const gridColumn = i === 0 ? '1 / 3' : i === 1 ? '3' : i === 2 ? '1' : '2 / 4'
+                return (
                   <div
-                    className="project-preview"
+                    key={i}
+                    className="card project-card"
+                    onClick={() => setLightbox({ link: project.link, title: project.title })}
                     style={{
-                      width: '100%',
-                      height: 260,
-                      borderRadius: '18px 18px 0 0',
-                      position: 'relative',
-                      overflow: 'hidden',           /* ← FIX: содержит iframe строго внутри */
-                      background: project.useIframe ? '#080d18' : 'transparent',
+                      gridColumn,
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s, box-shadow 0.2s',
+                      overflow: 'hidden',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.transform = 'translateY(-4px)'
+                      e.currentTarget.style.boxShadow = `0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px ${project.accent}33`
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = ''
                     }}
                   >
-                    {project.useIframe ? (
-                      /* iframe preview — scaled down, clipped by parent overflow:hidden */
-                      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-                        <iframe
-                          src={project.link}
-                          style={{
-                            width: '200%',
-                            height: '200%',
-                            border: 'none',
-                            transform: 'scale(0.5)',
-                            transformOrigin: 'top left',
-                            pointerEvents: 'none',
-                            display: 'block',      /* ← FIX: убирает inline baseline gap */
-                          }}
-                          loading="lazy"
-                          title={project.title}
-                          sandbox="allow-scripts allow-same-origin"
-                        />
+                    <div
+                      className="project-preview"
+                      style={{
+                        width: '100%',
+                        height: 260,
+                        borderRadius: '18px 18px 0 0',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        background: project.useIframe ? '#080d18' : 'transparent',
+                      }}
+                    >
+                      {project.useIframe ? (
+                        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+                          <iframe
+                            src={project.link}
+                            style={{
+                              width: '200%',
+                              height: '200%',
+                              border: 'none',
+                              transform: 'scale(0.5)',
+                              transformOrigin: 'top left',
+                              pointerEvents: 'none',
+                              display: 'block',
+                            }}
+                            loading="lazy"
+                            title={project.title}
+                            sandbox="allow-scripts allow-same-origin"
+                          />
+                        </div>
+                      ) : (
+                        <AquaparkHeroPreview />
+                      )}
+
+                      {/* Bottom gradient */}
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 60, background: 'linear-gradient(to bottom, transparent, rgba(8,13,24,0.6))', pointerEvents: 'none' }}/>
+
+                      {/* Industry badge */}
+                      <div style={{ position: 'absolute', top: 12, right: 12 }}>
+                        <span style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', border: `1px solid ${project.accent}55`, color: project.accent, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 100 }}>{project.industry}</span>
                       </div>
-                    ) : (
-                      /* FIX: Aquapark кастомный превью 1:1 */
-                      <AquaparkHeroPreview />
-                    )}
 
-                    {/* Bottom gradient */}
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 60, background: 'linear-gradient(to bottom, transparent, rgba(8,13,24,0.6))', pointerEvents: 'none' }}/>
+                      {/* Days badge */}
+                      <div style={{ position: 'absolute', bottom: 12, left: 12 }}>
+                        <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', padding: '3px 10px', borderRadius: 100 }}>
+                          ⏱ {project.days} {c('дней', 'päeva', 'days')}
+                        </span>
+                      </div>
 
-                    {/* Industry badge */}
-                    <div style={{ position: 'absolute', top: 12, right: 12 }}>
-                      <span style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', border: `1px solid ${project.accent}55`, color: project.accent, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 100 }}>{project.industry}</span>
+                      {/* Click hint */}
+                      <div className="preview-hint" style={{ position: 'absolute', top: 12, left: 12, transition: 'opacity 0.2s' }}>
+                        <span style={{ color: 'white', fontSize: 11, background: 'rgba(79,156,249,0.7)', backdropFilter: 'blur(8px)', padding: '3px 10px', borderRadius: 100, fontWeight: 600 }}>
+                          {c('Открыть', 'Ava', 'Open')} ↗
+                        </span>
+                      </div>
                     </div>
 
-                    {/* Days badge */}
-                    <div style={{ position: 'absolute', bottom: 12, left: 12 }}>
-                      <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', padding: '3px 10px', borderRadius: 100 }}>
-                        ⏱ {project.days} {c('дней', 'päeva', 'days')}
-                      </span>
-                    </div>
-
-                    {/* Click hint */}
-                    <div className="preview-hint" style={{ position: 'absolute', top: 12, left: 12, transition: 'opacity 0.2s' }}>
-                      <span style={{ color: 'white', fontSize: 11, background: 'rgba(79,156,249,0.7)', backdropFilter: 'blur(8px)', padding: '3px 10px', borderRadius: 100, fontWeight: 600 }}>
-                        {c('Открыть', 'Ava', 'Open')} ↗
-                      </span>
-                    </div>
-                  </div>
-
-                  <div style={{ padding: '22px 26px 26px' }}>
-                    <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6, letterSpacing: '-0.01em' }}>{project.title}</h3>
-                    <p style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.6, marginBottom: 14 }}>{project.desc}</p>
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
-                      {project.tags.map((tag: string, j: number) => <span key={j} className="tag">{tag}</span>)}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--accent)', fontSize: 13, fontWeight: 600 }}>
-                      {c('Открыть проект', 'Ava projekt', 'Open project')}
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                    <div style={{ padding: '22px 26px 26px' }}>
+                      <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6, letterSpacing: '-0.01em' }}>{project.title}</h3>
+                      <p style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.6, marginBottom: 14 }}>{project.desc}</p>
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
+                        {project.tags.map((tag: string, j: number) => <span key={j} className="tag">{tag}</span>)}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--accent)', fontSize: 13, fontWeight: 600 }}>
+                        {c('Открыть проект', 'Ava projekt', 'Open project')}
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                      </div>
                     </div>
                   </div>
-                </div>
-      )
-  })}
-</div>
+                )
+              })}
+            </div>
           </div>
         </section>
 
