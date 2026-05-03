@@ -41,10 +41,10 @@ export const metadata: Metadata = {
     images: ['/og-image.png'],
   },
   icons: {
-    icon: [{ url: '/favicon.png', type: 'image/svg+xml' }],
-    shortcut: '/favicon.png',
-    apple: '/favicon.png',
-  },
+  icon: [{ url: '/favicon.png', type: 'image/png' }],
+  shortcut: '/favicon.png',
+  apple: '/favicon.png',
+},
   alternates: { canonical: 'https://northpixel.ee' },
   robots: { index: true, follow: true },
 }
