@@ -295,7 +295,7 @@ export default function Home() {
                 {c('Мы берём на себя ключевые задачи, чтобы сайт начал работать сразу после запуска.', 'Võtame peamised ülesanded enda peale, et veebileht hakkaks tööle kohe pärast käivitamist.', 'We handle the key tasks so your website starts working right after launch.')}
               </p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 18 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}>
               {[
                 { icon: '⚡', title: c('Готовый сайт за 7 дней', 'Valmis veebileht 7 päevaga', 'Ready website in 7 days'), desc: c('Запускаем быстро без потери качества', 'Käivitame kiiresti ilma kvaliteeti kaotamata', 'Launch fast without sacrificing quality') },
                 { icon: '🎨', title: c('Индивидуальный дизайн', 'Individuaalne disain', 'Individual design'), desc: c('Под ваш бизнес, не шаблонное решение', 'Teie äri jaoks, mitte malli lahendus', 'For your business, not a template') },
@@ -304,7 +304,7 @@ export default function Home() {
                 { icon: '📩', title: c('Форма заявок', 'Päringuvorm', 'Lead form'), desc: c('Подключаем email и мессенджеры', 'Ühendame e-posti ja sõnumirakendused', 'Connect email and messengers') },
                 { icon: '📱', title: c('Мобильная версия', 'Mobiiliversioon', 'Mobile version'), desc: c('Идеально на любом устройстве', 'Ideaalselt igal seadmel', 'Perfect on any device') },
               ].map((item, i) => (
-                <div key={i} className="card" style={{ padding: '26px' }}>
+                <div key={i} className="card" style={{ padding: '28px 26px', minHeight: 160 }}>
                   <div style={{ width: 46, height: 46, borderRadius: 12, background: 'rgba(79,156,249,0.07)', border: '1px solid rgba(79,156,249,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, marginBottom: 16 }}>
                     {item.icon}
                   </div>
@@ -468,7 +468,7 @@ export default function Home() {
                     </div>
                   )}
                   <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>{plan.name}</div>
-                  <div style={{ fontFamily: 'var(--font-inter)', fontSize: plan.price === '+' ? 32 : 40, fontWeight: 800, color: plan.featured ? 'var(--accent)' : 'white', marginBottom: 4, letterSpacing: '-0.03em' }}>{plan.price}</div>
+                  {plan.price !== '+' && <div style={{ fontFamily: 'var(--font-inter)', fontSize: 40, fontWeight: 800, color: plan.featured ? 'var(--accent)' : 'white', marginBottom: 4, letterSpacing: '-0.03em' }}>{plan.price}</div>}
                   <div style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid var(--border)' }}>{plan.fit}</div>
                   <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 24 }}>
                     {plan.features.map((f, j) => (
@@ -478,7 +478,7 @@ export default function Home() {
                       </li>
                     ))}
                   </ul>
-                  {plan.price !== '+' && (
+                  {plan.name !== c('ДОПОЛНИТЕЛЬНО', 'LISATEENUSED', 'ADD-ONS') && (
                     <button className={plan.featured ? 'btn-primary' : 'btn-secondary'} onClick={() => scrollTo('contact')} style={{ width: '100%', justifyContent: 'center' }}>
                       {c('Выбрать', 'Vali', 'Choose')}
                     </button>
