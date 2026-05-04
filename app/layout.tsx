@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, Playfair_Display } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 
 const inter = Inter({
@@ -41,10 +42,10 @@ export const metadata: Metadata = {
     images: ['/og-image.png'],
   },
   icons: {
-  icon: [{ url: '/favicon.png', type: 'image/svg+xml' }],
-  shortcut: '/favicon.svg',
-  apple: '/favicon.svg',
-},
+    icon: [{ url: '/favicon.png', type: 'image/svg+xml' }],
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
   alternates: { canonical: 'https://northpixel.ee' },
   robots: { index: true, follow: true },
 }
@@ -52,6 +53,21 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
+      <head>
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-XR5VNE2NYD"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-XR5VNE2NYD');
+          `}
+        </Script>
+      </head>
       <body className={`${inter.variable} ${playfair.variable}`}>{children}</body>
     </html>
   )
