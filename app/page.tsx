@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { brand, locales, Lang } from '@/lib/content'
+import LaptopIntro from '@/components/LaptopIntro'
 
 // ─── Aquapark hero preview — real background photo ────────────────────────────
 function AquaparkHeroPreview() {
@@ -93,6 +94,7 @@ function AquaparkHeroPreview() {
 
 export default function Home() {
   const [lang, setLang] = useState<Lang>('ru')
+  const [introComplete, setIntroComplete] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
@@ -192,6 +194,7 @@ export default function Home() {
 
   return (
     <>
+    {!introComplete && <LaptopIntro onComplete={() => setIntroComplete(true)} />}
       <style>{`
         @media (max-width: 768px) {
           .project-card { grid-column: 1 / -1 !important; }
