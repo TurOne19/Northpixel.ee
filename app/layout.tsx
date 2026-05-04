@@ -23,7 +23,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://northpixel.ee'),
-  title: 'NorthPixel — сайты и лендинги для бизнеса за 7 дней',
+  title: 'NorthPixel - сайты и лендинги для бизнеса за 7 дней',
   description: 'Создаём современные лендинги для бизнеса. Понятная структура, дизайн и запуск за 7 дней. Помогаем получать заявки через сайт.',
   keywords: ['сайт для бизнеса', 'лендинг таллин', 'веб-дизайн эстония', 'создать сайт быстро', 'northpixel'],
   openGraph: {

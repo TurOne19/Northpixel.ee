@@ -10,16 +10,25 @@ export default function Icon() {
         style={{
           width: 32,
           height: 32,
-          borderRadius: 8,
-          background: 'linear-gradient(135deg, #06b6d4, #0284c7)',
+          borderRadius: 6,
+          background: '#0ea5e9',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M4 14V7l6 5 6-5v7" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
+        <div
+          style={{
+            color: 'white',
+            fontSize: 20,
+            fontWeight: 800,
+            fontFamily: 'sans-serif',
+            letterSpacing: '-1px',
+            lineHeight: 1,
+          }}
+        >
+          N
+        </div>
       </div>
     ),
     { ...size }
