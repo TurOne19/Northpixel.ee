@@ -349,9 +349,9 @@ export default function Home() {
               </div>
 
               <h1 style={{ fontFamily: 'var(--font-inter)', fontSize: 'clamp(44px, 7vw, 88px)', fontWeight: 800, lineHeight: 1.05, letterSpacing: '-0.03em', marginBottom: 28, color: 'white' }}>
-                {lang === 'ru' && <>Превращаем ваш бизнес<br/>в <span className="highlight">сайт</span>, который<br/>приводит <span className="text-accent">клиентов</span></>}
-                {lang === 'et' && <>Loome veebilehe,<br/>kus <span className="text-accent">tulemused</span><br/>räägivad ise</>}
-                {lang === 'en' && <>We turn your business<br/>into a <span className="highlight">website</span> that<br/>brings <span className="text-accent">clients</span></>}
+                {lang === 'ru' && <><span style={{ textDecoration: 'underline', textDecorationColor: 'var(--accent)', textUnderlineOffset: '6px', textDecorationThickness: '3px' }}>Сайт</span> для вашего бизнеса,<br/>который приводит клиентов</>}
+                {lang === 'et' && <><span style={{ textDecoration: 'underline', textDecorationColor: 'var(--accent)', textUnderlineOffset: '6px', textDecorationThickness: '3px' }}>Veebileht</span> teie ettevõttele,<br/>mis toob kliente</>}
+                {lang === 'en' && <><span style={{ textDecoration: 'underline', textDecorationColor: 'var(--accent)', textUnderlineOffset: '6px', textDecorationThickness: '3px' }}>Website</span> for your business<br/>that brings clients</>}
               </h1>
 
               <p style={{ fontSize: 'clamp(16px, 1.8vw, 19px)', color: 'var(--text-soft)', lineHeight: 1.75, maxWidth: 580, marginBottom: 14 }}>
