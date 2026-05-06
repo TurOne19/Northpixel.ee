@@ -110,6 +110,12 @@ export default function Home() {
 
   useEffect(() => {
     document.documentElement.lang = lang
+    const titles: Record<string, string> = {
+      ru: 'NorthPixel — сайты и лендинги для бизнеса за 7 дней',
+      et: 'NorthPixel — veebilehed ja maandumislehed äridele 7 päevaga',
+      en: 'NorthPixel — websites and landing pages for business in 7 days',
+    }
+    document.title = titles[lang]
   }, [lang])
 
   useEffect(() => {
