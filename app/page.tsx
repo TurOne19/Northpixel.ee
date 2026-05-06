@@ -109,6 +109,10 @@ export default function Home() {
   const changeLang = (l: Lang) => { setLang(l); localStorage.setItem('np-lang', l); setMenuOpen(false) }
 
   useEffect(() => {
+    document.documentElement.lang = lang
+  }, [lang])
+
+  useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40)
     window.addEventListener('scroll', fn)
     return () => window.removeEventListener('scroll', fn)
@@ -835,6 +839,24 @@ export default function Home() {
                 {c('Напишите нам →', 'Kirjutage meile →', 'Write to us →')}
               </button>
             </p>
+          </div>
+        </section>
+
+        {/* ── BLOG ── */}
+        <section id="blog" style={{ padding: '96px 24px', background: 'var(--bg)' }}>
+          <div style={{ maxWidth: 1160, margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: 56 }}>
+              <span className="section-label" style={{ marginBottom: 16, display: 'inline-flex' }}>
+                {c('Блог', 'Blogi', 'Blog')}
+              </span>
+              <h2 style={{ fontFamily: 'var(--font-inter)', fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 800, marginBottom: 16, letterSpacing: '-0.02em' }}>
+                {c('Полезные статьи', 'Kasulikud artiklid', 'Useful articles')}
+              </h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: 16, lineHeight: 1.75, maxWidth: 560, margin: '0 auto' }}>
+                {c('Советы по веб-дизайну, маркетингу и развитию бизнеса онлайн.', 'Näpunäited veebidisaini, turunduse ja veebipõhise äri arendamise kohta.', 'Tips on web design, marketing and growing your business online.')}
+              </p>
+            </div>
+            <div id="soro-blog"></div>
           </div>
         </section>
 
