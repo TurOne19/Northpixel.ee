@@ -26,30 +26,23 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL('https://northpixel.ee'),
   title: {
-    default: 'NorthPixel — сайты и лендинги для бизнеса за 7 дней',
+    default: 'NorthPixel — websites and landing pages for business in 7 days',
     template: '%s | NorthPixel',
   },
-  description: 'Создаём современные лендинги для бизнеса. Понятная структура, дизайн и запуск за 7 дней. Помогаем получать заявки через сайт.',
-  keywords: ['сайт для бизнеса', 'лендинг таллин', 'веб-дизайн эстония', 'создать сайт быстро', 'northpixel'],
+  description: 'We build modern websites and landing pages for business. Clear structure, design and launch in 7 days. Get leads through your website.',
+  keywords: ['website for business', 'landing page tallinn', 'web design estonia', 'build website fast', 'northpixel'],
   openGraph: {
-    title: 'NorthPixel — сайты и лендинги за 7 дней',
-    description: 'Создаём понятные сайты для бизнеса с фокусом на заявки. Быстрый запуск и современный дизайн.',
+    title: 'NorthPixel — websites and landing pages in 7 days',
+    description: 'We build clear websites for business focused on leads. Fast launch and modern design.',
     url: 'https://northpixel.ee',
     siteName: 'NorthPixel',
-    locale: 'ru_RU',
+    locale: 'en_US',
     type: 'website',
-    images: [{ url: '/logo.svg', width: 1200, height: 630, alt: 'NorthPixel' }],
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'NorthPixel — сайты и лендинги за 7 дней',
-    description: 'Создаём понятные сайты для бизнеса с фокусом на заявки.',
-    images: ['/logo.svg'],
-  },
-  icons: {
-    icon: [{ url: '/logo.svg', type: 'image/svg+xml' }],
-    shortcut: '/logo.svg',
-    apple: '/logo.svg',
+    card: 'summary',
+    title: 'NorthPixel — websites and landing pages in 7 days',
+    description: 'We build clear websites for business focused on leads.',
   },
   alternates: { canonical: 'https://northpixel.ee' },
   robots: { index: true, follow: true },
@@ -57,10 +50,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru">
+    <html lang="en">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Preconnect only to origins actually used */}
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://app.trysoro.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
@@ -69,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.variable} ${playfair.variable}`}>
         {children}
 
+        {/* Google Analytics — fully deferred */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-XR5VNE2NYD"
           strategy="lazyOnload"
@@ -83,6 +76,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           `}
         </Script>
 
+        {/* Soro blog — fully deferred */}
         <Script
           src="https://app.trysoro.com/api/embed/e4fb3d9e-a149-4648-851d-64fcf07d2789"
           strategy="lazyOnload"

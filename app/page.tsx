@@ -124,12 +124,8 @@ export default function Home() {
 
   useEffect(() => {
     document.documentElement.lang = lang
-    const titles: Record<string, string> = {
-      ru: 'NorthPixel — сайты и лендинги для бизнеса за 7 дней',
-      et: 'NorthPixel — veebilehed ja maandumislehed äridele 7 päevaga',
-      en: 'NorthPixel — websites and landing pages for business in 7 days',
-    }
-    document.title = titles[lang]
+    // Title stays in English for Google indexing regardless of UI language
+    document.title = 'NorthPixel — websites and landing pages for business in 7 days'
   }, [lang])
 
   useEffect(() => {
@@ -158,13 +154,16 @@ export default function Home() {
       if (!cards.length) return false
 
       const posts: { title: string; content: string; date?: string; excerpt?: string }[] = []
+      const seenTitles = new Set<string>()
+
       cards.forEach(card => {
         const titleEl = card.querySelector('h1, h2, h3, [class*="title"], [itemprop="headline"]')
         const contentEl = card.querySelector('[class*="content"], [class*="body"], [itemprop="articleBody"]') || card
         const dateEl = card.querySelector('time, [class*="date"], [itemprop="datePublished"]')
         const excerptEl = card.querySelector('p, [class*="excerpt"], [itemprop="description"]')
         const title = titleEl?.textContent?.trim() || ''
-        if (!title) return
+        if (!title || seenTitles.has(title)) return
+        seenTitles.add(title)
         posts.push({
           title,
           content: contentEl.innerHTML || '',
@@ -179,24 +178,26 @@ export default function Home() {
         const grid = document.getElementById('soro-blog-cards')
         if (!grid) return true
         grid.innerHTML = ''
-        posts.forEach((post, idx) => {
-          const card = document.createElement('div')
-          card.className = 'card soro-card'
-          card.style.cssText = 'padding:28px;cursor:pointer;display:flex;flex-direction:column;gap:12px;'
-          card.innerHTML = `
-            <div style="font-size:13px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">${post.date || ''}</div>
-            <h3 style="font-size:18px;font-weight:700;letter-spacing:-0.01em;line-height:1.4;color:#eef2f7;">${post.title}</h3>
-            <p style="color:var(--text-muted);font-size:13px;line-height:1.7;flex:1;">${(post.excerpt || '').slice(0, 140)}${(post.excerpt || '').length > 140 ? '…' : ''}</p>
-            <div style="color:var(--accent);font-size:13px;font-weight:600;display:flex;align-items:center;gap:5;margin-top:8px;">
-              Читать статью <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
-            </div>
-          `
-          card.addEventListener('click', () => {
-            const event = new CustomEvent('open-blog-post', { detail: { idx } })
-            window.dispatchEvent(event)
-          })
-          grid.appendChild(card)
+
+        // Show only the FIRST post as a card
+        const post = posts[0]
+        const readLabel = document.documentElement.lang === 'ru' ? 'Читать статью' : document.documentElement.lang === 'et' ? 'Loe artiklit' : 'Read article'
+        const card = document.createElement('div')
+        card.className = 'card soro-card'
+        card.style.cssText = 'padding:28px;cursor:pointer;display:flex;flex-direction:column;gap:12px;max-width:480px;margin:0 auto;'
+        card.innerHTML = `
+          <div style="font-size:13px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">${post.date || ''}</div>
+          <h3 style="font-size:18px;font-weight:700;letter-spacing:-0.01em;line-height:1.4;color:#eef2f7;">${post.title}</h3>
+          <p style="color:var(--text-muted);font-size:13px;line-height:1.7;flex:1;">${(post.excerpt || '').slice(0, 160)}${(post.excerpt || '').length > 160 ? '…' : ''}</p>
+          <div style="color:var(--accent);font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;margin-top:8px;">
+            ${readLabel} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
+          </div>
+        `
+        card.addEventListener('click', () => {
+          const event = new CustomEvent('open-blog-post', { detail: { idx: 0 } })
+          window.dispatchEvent(event)
         })
+        grid.appendChild(card)
         return true
       }
       return false
@@ -279,7 +280,7 @@ export default function Home() {
     {
       title: c('Юлия Петров', 'Julia Petrov', 'Julia Petrov'), industry: c('Нутрициология', 'Toitumine', 'Nutrition'),
       desc: c('Личный бренд с отзывами и мультиязычностью', 'Isiklik bränd arvustuste ja mitmekeelsusega', 'Personal brand with reviews & multilingual'),
-      tags: ['Personal Brand', 'Multilingual'], link: 'https://nutritsiolog-2.vercel.app', days: 10,
+      tags: ['Personal Brand', 'Multilingual'], link: 'https://www.nutribalance.ee', days: 10,
       accent: '#4ade80', useIframe: true,
     },
   ]
@@ -320,10 +321,11 @@ export default function Home() {
               {(['ru', 'et', 'en'] as Lang[]).map(l => (
                 <button key={l} onClick={() => changeLang(l)} style={{
                   background: lang === l ? 'var(--accent)' : 'transparent',
-                  color: lang === l ? 'white' : 'var(--text-muted)',
+                  color: 'white',
+                  opacity: lang === l ? 1 : 0.45,
                   border: 'none', cursor: 'pointer', padding: '4px 9px', borderRadius: 6,
                   fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-inter)',
-                  textTransform: 'uppercase', transition: 'all 0.2s', letterSpacing: '0.05em',
+                  textTransform: 'uppercase', transition: 'background 0.2s, opacity 0.2s', letterSpacing: '0.05em',
                 }}>{l}</button>
               ))}
             </div>
@@ -461,11 +463,11 @@ export default function Home() {
               </p>
 
               <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 20 }}>
-                <button className="btn-primary" onClick={() => scrollTo('contact')} style={{ padding: '15px 32px', fontSize: 15 }}>
+                <button className="btn-primary" onClick={() => scrollTo('contact')} style={{ padding: '15px 32px', fontSize: 15, minWidth: 180 }}>
                   {c('Оставить заявку', 'Küsi pakkumist', 'Get a Quote')}
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </button>
-                <button className="btn-secondary" onClick={() => scrollTo('work')} style={{ padding: '15px 32px', fontSize: 15 }}>
+                <button className="btn-secondary" onClick={() => scrollTo('work')} style={{ padding: '15px 32px', fontSize: 15, minWidth: 180 }}>
                   {c('Посмотреть примеры', 'Vaata näiteid', 'See Examples')}
                 </button>
               </div>
@@ -948,7 +950,7 @@ export default function Home() {
             </div>
 
             {/* Soro blog rendered as cards via JS after Soro loads */}
-            <div id="soro-blog-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24 }}></div>
+            <div id="soro-blog-cards" style={{ display: 'flex', justifyContent: 'center' }}></div>
             {/* Hidden original soro mount point */}
             <div id="soro-blog" style={{ display: 'none' }}></div>
           </div>
