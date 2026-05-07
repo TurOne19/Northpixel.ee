@@ -81,14 +81,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           `}
         </Script>
 
-        {/* Soro blog — fully deferred, forced English */}
-        <Script id="soro-lang" strategy="lazyOnload">
-          {`window.__soroLang = 'en';`}
-        </Script>
-        <Script
-          src="https://app.trysoro.com/api/embed/d872c3fb-ae74-4b04-9b16-cd4eaf34f084?lang=en&locale=en"
-          strategy="lazyOnload"
-        />
+
       </body>
     </html>
   )
