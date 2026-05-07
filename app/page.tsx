@@ -92,7 +92,9 @@ function AquaparkHeroPreview() {
 }
 
 export default function Home() {
-  const [lang, setLang] = useState<Lang>('ru')
+  // Стартуем с 'en' — H1 рендерится сразу, без ожидания JS (LCP fix)
+  // После mount читаем localStorage / navigator.languages
+  const [lang, setLang] = useState<Lang>('en')
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [openFaq, setOpenFaq] = useState<number | null>(null)

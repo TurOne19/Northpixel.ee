@@ -3,6 +3,10 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+  // Убираем устаревшие полифиллы — экономит ~12 КБ JS
+  experimental: {
+    browsersListForSwc: true,
+  },
   async headers() {
     return [
       {

@@ -57,7 +57,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="shortcut icon" href="/logo.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/logo.svg" />
 
-        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        {/* GTM грузится lazy — preconnect бесполезен, только dns-prefetch */}
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://app.trysoro.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         <link rel="preload" href="/logo.svg" as="image" type="image/svg+xml" />
