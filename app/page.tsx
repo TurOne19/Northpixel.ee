@@ -99,11 +99,25 @@ export default function Home() {
   const [formState, setFormState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [formData, setFormData] = useState({ name: '', contact: '', business: '', budget: '', message: '' })
   const [lightbox, setLightbox] = useState<{ link: string; title: string } | null>(null)
+  const [blogLightbox, setBlogLightbox] = useState<{ title: string; content: string; date?: string; idx: number } | null>(null)
+  const [blogPosts, setBlogPosts] = useState<{ title: string; content: string; date?: string; excerpt?: string }[]>([])
   const t = locales[lang]
 
   useEffect(() => {
     const saved = localStorage.getItem('np-lang') as Lang | null
-    if (saved && ['en', 'ru', 'et'].includes(saved)) setLang(saved)
+    if (saved && ['en', 'ru', 'et'].includes(saved)) {
+      setLang(saved)
+    } else {
+      // Auto-detect from browser language
+      const browserLangs = navigator.languages || [navigator.language]
+      let detected: Lang = 'en'
+      for (const bl of browserLangs) {
+        const l = bl.toLowerCase()
+        if (l.startsWith('ru')) { detected = 'ru'; break }
+        if (l.startsWith('et')) { detected = 'et'; break }
+      }
+      setLang(detected)
+    }
   }, [])
 
   const changeLang = (l: Lang) => { setLang(l); localStorage.setItem('np-lang', l); setMenuOpen(false) }
@@ -125,15 +139,85 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    document.body.style.overflow = (menuOpen || lightbox) ? 'hidden' : ''
+    document.body.style.overflow = (menuOpen || lightbox || blogLightbox) ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
-  }, [menuOpen, lightbox])
+  }, [menuOpen, lightbox, blogLightbox])
 
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightbox(null) }
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { setLightbox(null); setBlogLightbox(null) } }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
   }, [])
+
+  // Parse Soro blog posts into cards
+  useEffect(() => {
+    const tryParse = () => {
+      const soroRoot = document.getElementById('soro-blog')
+      if (!soroRoot) return false
+      const cards = soroRoot.querySelectorAll('[class*="card"], article, [data-slug]')
+      if (!cards.length) return false
+
+      const posts: { title: string; content: string; date?: string; excerpt?: string }[] = []
+      cards.forEach(card => {
+        const titleEl = card.querySelector('h1, h2, h3, [class*="title"], [itemprop="headline"]')
+        const contentEl = card.querySelector('[class*="content"], [class*="body"], [itemprop="articleBody"]') || card
+        const dateEl = card.querySelector('time, [class*="date"], [itemprop="datePublished"]')
+        const excerptEl = card.querySelector('p, [class*="excerpt"], [itemprop="description"]')
+        const title = titleEl?.textContent?.trim() || ''
+        if (!title) return
+        posts.push({
+          title,
+          content: contentEl.innerHTML || '',
+          date: dateEl?.textContent?.trim(),
+          excerpt: excerptEl?.textContent?.trim(),
+        })
+      })
+
+      if (posts.length) {
+        setBlogPosts(posts)
+
+        const grid = document.getElementById('soro-blog-cards')
+        if (!grid) return true
+        grid.innerHTML = ''
+        posts.forEach((post, idx) => {
+          const card = document.createElement('div')
+          card.className = 'card soro-card'
+          card.style.cssText = 'padding:28px;cursor:pointer;display:flex;flex-direction:column;gap:12px;'
+          card.innerHTML = `
+            <div style="font-size:13px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">${post.date || ''}</div>
+            <h3 style="font-size:18px;font-weight:700;letter-spacing:-0.01em;line-height:1.4;color:#eef2f7;">${post.title}</h3>
+            <p style="color:var(--text-muted);font-size:13px;line-height:1.7;flex:1;">${(post.excerpt || '').slice(0, 140)}${(post.excerpt || '').length > 140 ? '…' : ''}</p>
+            <div style="color:var(--accent);font-size:13px;font-weight:600;display:flex;align-items:center;gap:5;margin-top:8px;">
+              Читать статью <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
+            </div>
+          `
+          card.addEventListener('click', () => {
+            const event = new CustomEvent('open-blog-post', { detail: { idx } })
+            window.dispatchEvent(event)
+          })
+          grid.appendChild(card)
+        })
+        return true
+      }
+      return false
+    }
+
+    // Try immediately, then poll after Soro loads
+    if (!tryParse()) {
+      const interval = setInterval(() => { if (tryParse()) clearInterval(interval) }, 800)
+      setTimeout(() => clearInterval(interval), 15000)
+    }
+  }, [])
+
+  // Listen for blog card click events
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { idx } = (e as CustomEvent).detail
+      setBlogLightbox({ ...blogPosts[idx], idx })
+    }
+    window.addEventListener('open-blog-post', handler)
+    return () => window.removeEventListener('open-blog-post', handler)
+  }, [blogPosts])
 
   const scrollTo = (id: string) => {
     setMenuOpen(false)
@@ -188,8 +272,8 @@ export default function Home() {
     },
     {
       title: 'Aquapark H2O', industry: c('Аквапарк', 'Veekeskus', 'Aquapark'),
-      desc: c('E-commerce с интеграцией оплаты', 'E-pood maksete integratsiooniga', 'E-commerce with payment integration'),
-      tags: ['E-commerce', 'Booking'], link: 'https://aquapark-ee.vercel.app', days: 12,
+      desc: c('Сайт для сервиса и онлайн-бронирования', 'Veebileht teenuse ja broneerimise jaoks', 'Website for service & online booking'),
+      tags: ['Booking', 'Service'], link: 'https://aquapark-ee.vercel.app', days: 12,
       accent: '#f5c842', useIframe: false,
     },
     {
@@ -222,7 +306,7 @@ export default function Home() {
       }}>
         <div style={{ maxWidth: 1160, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <img src="/logo.svg" alt="NorthPixel" style={{ height: 36, width: 'auto' }} />
+            <img src="/logo.svg" alt="NorthPixel" width={140} height={36} style={{ height: 36, width: 'auto' }} />
           </div>
 
           <nav className="hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
@@ -247,6 +331,7 @@ export default function Home() {
               {c('Оставить заявку', 'Küsi pakkumist', 'Get a Quote')}
             </button>
             <button onClick={() => setMenuOpen(!menuOpen)} className="show-mobile"
+              aria-label={menuOpen ? c('Закрыть меню', 'Sulge menüü', 'Close menu') : c('Открыть меню', 'Ava menüü', 'Open menu')}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', padding: 4 }}>
               {menuOpen
                 ? <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -404,7 +489,6 @@ export default function Home() {
                 { num: '7', suf: c('дней', 'päeva', 'days'), label: c('средний срок запуска', 'keskmine käivitusaeg', 'avg. launch time') },
                 { num: '€290', suf: '', label: c('стартовая цена', 'alghind', 'starting price') },
                 { num: '100%', suf: '', label: c('адаптация под телефон', 'mobiilisõbralik', 'mobile-ready') },
-                { num: '3+', suf: '', label: c('живых сайта', 'elavat saiti', 'live websites') },
               ].map((s, i) => (
                 <div key={i} style={{ flex: '1 1 140px', padding: '20px 28px', borderLeft: i > 0 ? '1px solid var(--border)' : 'none' }}>
                   <div className="stat-num">{s.num}<span style={{ fontSize: '0.5em', opacity: 0.6 }}>{s.suf}</span></div>
@@ -862,9 +946,104 @@ export default function Home() {
                 {c('Советы по веб-дизайну, маркетингу и развитию бизнеса онлайн.', 'Näpunäited veebidisaini, turunduse ja veebipõhise äri arendamise kohta.', 'Tips on web design, marketing and growing your business online.')}
               </p>
             </div>
-            <div id="soro-blog"></div>
+
+            {/* Soro blog rendered as cards via JS after Soro loads */}
+            <div id="soro-blog-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24 }}></div>
+            {/* Hidden original soro mount point */}
+            <div id="soro-blog" style={{ display: 'none' }}></div>
           </div>
         </section>
+
+        {/* ── BLOG LIGHTBOX ── */}
+        {blogLightbox && (
+          <div
+            onClick={() => setBlogLightbox(null)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 200,
+              background: 'rgba(8,13,24,0.96)', backdropFilter: 'blur(20px)',
+              display: 'flex', flexDirection: 'column',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Header */}
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '16px 24px', borderBottom: '1px solid var(--border)',
+                flexShrink: 0,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <button
+                  onClick={() => setBlogLightbox(null)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4, fontSize: 20, lineHeight: 1 }}
+                >✕</button>
+                <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+                  {blogLightbox.idx + 1} / {blogPosts.length}
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => setBlogLightbox(prev => prev && prev.idx > 0 ? { ...blogPosts[prev.idx - 1], idx: prev.idx - 1 } : prev)}
+                  disabled={blogLightbox.idx === 0}
+                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 14px', color: 'var(--text-soft)', cursor: blogLightbox.idx === 0 ? 'not-allowed' : 'pointer', opacity: blogLightbox.idx === 0 ? 0.4 : 1, fontSize: 13 }}
+                >← {c('Пред.', 'Eelm.', 'Prev')}</button>
+                <button
+                  onClick={() => setBlogLightbox(prev => prev && prev.idx < blogPosts.length - 1 ? { ...blogPosts[prev.idx + 1], idx: prev.idx + 1 } : prev)}
+                  disabled={blogLightbox.idx === blogPosts.length - 1}
+                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 14px', color: 'var(--text-soft)', cursor: blogLightbox.idx === blogPosts.length - 1 ? 'not-allowed' : 'pointer', opacity: blogLightbox.idx === blogPosts.length - 1 ? 0.4 : 1, fontSize: 13 }}
+                >{c('След.', 'Järgm.', 'Next')} →</button>
+              </div>
+            </div>
+
+            {/* Article content */}
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{ flex: 1, overflowY: 'auto', padding: '40px 24px', maxWidth: 760, margin: '0 auto', width: '100%' }}
+            >
+              <h1 style={{ fontFamily: 'var(--font-inter)', fontSize: 'clamp(24px, 4vw, 36px)', fontWeight: 800, marginBottom: 16, letterSpacing: '-0.02em', lineHeight: 1.25 }}>
+                {blogLightbox.title}
+              </h1>
+              {blogLightbox.date && (
+                <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 32 }}>{blogLightbox.date}</p>
+              )}
+              <div
+                className="soro-article-body"
+                dangerouslySetInnerHTML={{ __html: blogLightbox.content }}
+              />
+
+              {/* CTA block */}
+              <div style={{
+                marginTop: 56, padding: '36px 32px', borderRadius: 20,
+                background: 'linear-gradient(135deg, rgba(79,156,249,0.08) 0%, rgba(167,139,250,0.06) 100%)',
+                border: '1px solid rgba(79,156,249,0.2)',
+                textAlign: 'center',
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}>
+                  NorthPixel
+                </div>
+                <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 'clamp(20px, 3vw, 26px)', fontWeight: 800, marginBottom: 12, letterSpacing: '-0.02em' }}>
+                  {c('Нужен сайт для бизнеса?', 'Vajate äri jaoks veebilehte?', 'Need a website for your business?')}
+                </h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: 15, lineHeight: 1.7, marginBottom: 24, maxWidth: 480, margin: '0 auto 24px' }}>
+                  {c(
+                    'Создаём современные сайты и лендинги с фокусом на заявки, клиентов и понятную структуру.',
+                    'Loome kaasaegseid veebilehti ja maandumislehti fookusega päringutele, klientidele ja selgele struktuurile.',
+                    'We build modern websites and landing pages focused on leads, clients and clear structure.'
+                  )}
+                </p>
+                <button
+                  className="btn-primary"
+                  onClick={() => { setBlogLightbox(null); setTimeout(() => scrollTo('contact'), 100) }}
+                  style={{ margin: '0 auto' }}
+                >
+                  {c('Обсудить проект', 'Arutle projekti', 'Discuss project')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── CONTACT ── */}
         <section id="contact" style={{ padding: '96px 24px', background: 'var(--bg-light)' }}>
@@ -930,7 +1109,7 @@ export default function Home() {
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{c('Бюджет', 'Eelarve', 'Budget')}</label>
-                    <select className="form-input" value={formData.budget} onChange={e => setFormData(p => ({ ...p, budget: e.target.value }))}>
+                    <select className="form-input" aria-label={c('Бюджет', 'Eelarve', 'Budget')} value={formData.budget} onChange={e => setFormData(p => ({ ...p, budget: e.target.value }))}>
                       <option value="">{c('Выберите диапазон', 'Valige vahemik', 'Select a range')}</option>
                       <option value="<300">До 300€</option>
                       <option value="300-500">300–500€</option>
@@ -964,7 +1143,7 @@ export default function Home() {
           <div style={{ maxWidth: 1160, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 20 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <img src="/logo.svg" alt="NorthPixel" style={{ height: 30, width: 'auto' }} />
+                <img src="/logo.svg" alt="NorthPixel" width={117} height={30} style={{ height: 30, width: 'auto' }} />
               </div>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', maxWidth: 320, lineHeight: 1.6 }}>
                 {c('Создаём современные сайты для бизнеса с фокусом на результат.', 'Loome kaasaegseid veebilehti äridele fookusega tulemusele.', 'We create modern websites for business with a focus on results.')}

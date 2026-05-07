@@ -1,21 +1,17 @@
 import { ImageResponse } from 'next/og'
-import { readFileSync } from 'fs'
-import { join } from 'path'
 
 export const size = { width: 32, height: 32 }
 export const contentType = 'image/png'
 
 export default function Icon() {
-  const svgData = readFileSync(join(process.cwd(), 'public', 'favicon.png'))
-  const base64 = svgData.toString('base64')
-  const src = `data:image/svg+xml;base64,${base64}`
-
   return new ImageResponse(
     (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={src}
+        src="https://northpixel.ee/favicon.png"
         width={32}
         height={32}
+        alt="NorthPixel"
         style={{ borderRadius: 6 }}
       />
     ),

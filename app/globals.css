@@ -342,3 +342,97 @@ select.form-input option { background: #0f1726; color: #eef2f7; }
   .show-mobile { display: none !important; }
   .hide-mobile { display: flex !important; }
 }
+
+/* Soro blog cards */
+.soro-card {
+  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s, background 0.25s;
+}
+.soro-card:hover {
+  border-color: rgba(79,156,249,0.3) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(79,156,249,0.12);
+}
+
+/* Soro article body styles */
+.soro-article-body {
+  color: var(--text-soft);
+  font-size: 16px;
+  line-height: 1.85;
+}
+.soro-article-body h1,
+.soro-article-body h2,
+.soro-article-body h3,
+.soro-article-body h4 {
+  font-family: var(--font-inter), sans-serif;
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 36px;
+  margin-bottom: 14px;
+  line-height: 1.3;
+}
+.soro-article-body h2 { font-size: clamp(20px, 3vw, 26px); }
+.soro-article-body h3 { font-size: clamp(17px, 2.5vw, 21px); }
+.soro-article-body p {
+  margin-bottom: 18px;
+  color: var(--text-soft);
+}
+.soro-article-body ul,
+.soro-article-body ol {
+  margin: 16px 0 20px 0;
+  padding-left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.soro-article-body li {
+  color: var(--text-soft);
+  font-size: 15px;
+  line-height: 1.7;
+}
+.soro-article-body strong, .soro-article-body b {
+  color: var(--text);
+  font-weight: 700;
+}
+.soro-article-body a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(79,156,249,0.3);
+  transition: border-color 0.2s;
+}
+.soro-article-body a:hover { border-color: var(--accent); }
+.soro-article-body blockquote {
+  margin: 24px 0;
+  padding: 16px 20px;
+  border-left: 3px solid var(--accent);
+  background: rgba(79,156,249,0.04);
+  border-radius: 0 10px 10px 0;
+  color: var(--text-soft);
+  font-style: italic;
+}
+.soro-article-body img {
+  max-width: 100%;
+  border-radius: 12px;
+  margin: 24px 0;
+}
+.soro-article-body code {
+  background: rgba(79,156,249,0.08);
+  border: 1px solid rgba(79,156,249,0.15);
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-size: 13px;
+  color: var(--accent);
+}
+.soro-article-body pre {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  overflow-x: auto;
+  margin: 24px 0;
+}
+.soro-article-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 32px 0;
+}
