@@ -414,6 +414,21 @@ select.form-input option { background: #0f1726; color: #eef2f7; }
   max-width: 100%;
   border-radius: 12px;
   margin: 24px 0;
+  /* Images are stripped via JS — this hides any that slip through */
+  display: none !important;
+}
+.soro-article-body picture,
+.soro-article-body figure,
+.soro-article-body video,
+.soro-article-body iframe,
+.soro-article-body [class*="image"],
+.soro-article-body [class*="media"],
+.soro-article-body [class*="cover"],
+.soro-article-body [class*="thumbnail"],
+.soro-article-body [class*="banner"],
+.soro-article-body [class*="hero-img"],
+.soro-article-body [class*="featured"] {
+  display: none !important;
 }
 .soro-article-body code {
   background: rgba(79,156,249,0.08);

@@ -149,28 +149,63 @@ export default function Home() {
 
   // Parse Soro blog posts into cards
   useEffect(() => {
+    // Strip images from HTML content for lightbox (text-only reading)
+    const stripImages = (html: string): string => {
+      const tmp = document.createElement('div')
+      tmp.innerHTML = html
+      tmp.querySelectorAll('img, picture, figure, video, iframe, [class*="image"], [class*="media"], [class*="cover"], [class*="thumbnail"], [class*="banner"], [class*="hero"]').forEach(el => el.remove())
+      return tmp.innerHTML
+    }
+
     const tryParse = () => {
+      // Check both the hidden div and the shadow/iframe Soro might use
       const soroRoot = document.getElementById('soro-blog')
       if (!soroRoot) return false
-      const cards = soroRoot.querySelectorAll('[class*="card"], article, [data-slug]')
+
+      // New Soro embed uses various structures — cast a wide net
+      const cards = soroRoot.querySelectorAll(
+        '[class*="post"], [class*="card"], [class*="article"], article, [data-slug], [data-id], [data-post]'
+      )
       if (!cards.length) return false
 
       const posts: { title: string; content: string; date?: string; excerpt?: string }[] = []
       const seenTitles = new Set<string>()
 
       cards.forEach(card => {
-        const titleEl = card.querySelector('h1, h2, h3, [class*="title"], [itemprop="headline"]')
-        const contentEl = card.querySelector('[class*="content"], [class*="body"], [itemprop="articleBody"]') || card
-        const dateEl = card.querySelector('time, [class*="date"], [itemprop="datePublished"]')
-        const excerptEl = card.querySelector('p, [class*="excerpt"], [itemprop="description"]')
+        // Title: try multiple selectors in order of specificity
+        const titleEl =
+          card.querySelector('[class*="title"], [class*="heading"], [itemprop="headline"]') ||
+          card.querySelector('h1, h2, h3, h4')
+        // Full article body (strip images for lightbox)
+        const contentEl =
+          card.querySelector('[class*="content"], [class*="body"], [class*="text"], [itemprop="articleBody"]') ||
+          card
+        // Date
+        const dateEl =
+          card.querySelector('[class*="date"], [class*="time"], [itemprop="datePublished"], time')
+        // Excerpt: first meaningful paragraph
+        const excerptEl =
+          card.querySelector('[class*="excerpt"], [class*="description"], [class*="summary"], [itemprop="description"]') ||
+          card.querySelector('p')
+
         const title = titleEl?.textContent?.trim() || ''
         if (!title || seenTitles.has(title)) return
         seenTitles.add(title)
+
+        // Get full content but remove images
+        const rawContent = contentEl.innerHTML || ''
+        const cleanContent = stripImages(rawContent)
+
+        // Extract plain text excerpt
+        const excerptRaw = excerptEl?.textContent?.trim() || ''
+        // Fallback: use plain text from content
+        const excerpt = excerptRaw || (contentEl.textContent?.trim().slice(0, 200) || '')
+
         posts.push({
           title,
-          content: contentEl.innerHTML || '',
-          date: dateEl?.textContent?.trim(),
-          excerpt: excerptEl?.textContent?.trim(),
+          content: cleanContent,
+          date: dateEl?.getAttribute('datetime') || dateEl?.textContent?.trim(),
+          excerpt,
         })
       })
 
@@ -181,34 +216,42 @@ export default function Home() {
         if (!grid) return true
         grid.innerHTML = ''
 
-        // Show only the FIRST post as a card
-        const post = posts[0]
-        const readLabel = document.documentElement.lang === 'ru' ? 'Читать статью' : document.documentElement.lang === 'et' ? 'Loe artiklit' : 'Read article'
-        const card = document.createElement('div')
-        card.className = 'card soro-card'
-        card.style.cssText = 'padding:28px;cursor:pointer;display:flex;flex-direction:column;gap:12px;max-width:480px;margin:0 auto;'
-        card.innerHTML = `
-          <div style="font-size:13px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">${post.date || ''}</div>
-          <h3 style="font-size:18px;font-weight:700;letter-spacing:-0.01em;line-height:1.4;color:#eef2f7;">${post.title}</h3>
-          <p style="color:var(--text-muted);font-size:13px;line-height:1.7;flex:1;">${(post.excerpt || '').slice(0, 160)}${(post.excerpt || '').length > 160 ? '…' : ''}</p>
-          <div style="color:var(--accent);font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;margin-top:8px;">
-            ${readLabel} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
-          </div>
-        `
-        card.addEventListener('click', () => {
-          const event = new CustomEvent('open-blog-post', { detail: { idx: 0 } })
-          window.dispatchEvent(event)
+        // Show ALL posts as cards in a responsive grid
+        const currentLang = document.documentElement.lang
+        const readLabel = currentLang === 'ru' ? 'Читать статью' : currentLang === 'et' ? 'Loe artiklit' : 'Read article'
+
+        // Wrap in a grid container
+        grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;width:100%;max-width:1160px;margin:0 auto;'
+
+        posts.forEach((post, idx) => {
+          const card = document.createElement('div')
+          card.className = 'card soro-card'
+          card.style.cssText = 'padding:28px;cursor:pointer;display:flex;flex-direction:column;gap:12px;transition:transform 0.2s,box-shadow 0.2s;'
+          card.innerHTML = `
+            ${post.date ? `<div style="font-size:12px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">${post.date}</div>` : ''}
+            <h3 style="font-size:17px;font-weight:700;letter-spacing:-0.01em;line-height:1.4;color:#eef2f7;margin:0;">${post.title}</h3>
+            <p style="color:var(--text-muted);font-size:13px;line-height:1.7;flex:1;margin:0;">${(post.excerpt || '').slice(0, 180)}${(post.excerpt || '').length > 180 ? '…' : ''}</p>
+            <div style="color:var(--accent);font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;margin-top:8px;">
+              ${readLabel} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
+            </div>
+          `
+          card.addEventListener('mouseenter', () => { card.style.transform = 'translateY(-3px)'; card.style.boxShadow = '0 8px 32px rgba(0,0,0,0.3)' })
+          card.addEventListener('mouseleave', () => { card.style.transform = ''; card.style.boxShadow = '' })
+          card.addEventListener('click', () => {
+            const event = new CustomEvent('open-blog-post', { detail: { idx } })
+            window.dispatchEvent(event)
+          })
+          grid.appendChild(card)
         })
-        grid.appendChild(card)
         return true
       }
       return false
     }
 
-    // Try immediately, then poll after Soro loads
+    // Try immediately, then poll after Soro loads (new embed can take a few seconds)
     if (!tryParse()) {
-      const interval = setInterval(() => { if (tryParse()) clearInterval(interval) }, 800)
-      setTimeout(() => clearInterval(interval), 15000)
+      const interval = setInterval(() => { if (tryParse()) clearInterval(interval) }, 600)
+      setTimeout(() => clearInterval(interval), 20000)
     }
   }, [])
 
@@ -952,9 +995,9 @@ export default function Home() {
             </div>
 
             {/* Soro blog rendered as cards via JS after Soro loads */}
-            <div id="soro-blog-cards" style={{ display: 'flex', justifyContent: 'center' }}></div>
-            {/* Hidden original soro mount point — forced English */}
-            <div id="soro-blog" data-lang="en" data-locale="en" lang="en" style={{ display: 'none' }}></div>
+            <div id="soro-blog-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24, width: '100%' }}></div>
+            {/* Soro mount point — visually hidden but NOT display:none so it can render */}
+            <div id="soro-blog" data-lang="en" data-locale="en" lang="en" style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, overflow: 'hidden', visibility: 'hidden' }}></div>
           </div>
         </section>
 

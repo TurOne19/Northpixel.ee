@@ -86,7 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {`window.__soroLang = 'en';`}
         </Script>
         <Script
-          src="https://app.trysoro.com/api/embed/e4fb3d9e-a149-4648-851d-64fcf07d2789?lang=en&locale=en"
+          src="https://app.trysoro.com/api/embed/d872c3fb-ae74-4b04-9b16-cd4eaf34f084?lang=en&locale=en"
           strategy="lazyOnload"
         />
       </body>
