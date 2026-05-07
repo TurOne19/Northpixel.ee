@@ -3,10 +3,6 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  // Убираем устаревшие полифиллы — экономит ~12 КБ JS
-  experimental: {
-    browsersListForSwc: true,
-  },
   async headers() {
     return [
       {
@@ -17,7 +13,7 @@ const nextConfig = {
         ],
       },
       {
-        source: '/(.*)\\.(svg|png|jpg|jpeg|webp|ico|woff|woff2)',
+        source: '/(.*)\\.( svg|png|jpg|jpeg|webp|ico|woff|woff2)',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],

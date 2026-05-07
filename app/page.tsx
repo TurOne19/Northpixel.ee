@@ -874,9 +874,8 @@ export default function Home() {
                 {c('Советы по веб-дизайну, маркетингу и развитию бизнеса онлайн.', 'Näpunäited veebidisaini, turunduse ja veebipõhise äri arendamise kohta.', 'Tips on web design, marketing and growing your business online.')}
               </p>
             </div>
-            {/* Soro native embed — renders its own UI */}
-            <div id="soro-blog"></div>
-<script src="https://app.trysoro.com/api/embed/c1441b0e-92a4-4fec-b47c-a10a02e5b1e0" defer></script>
+            <div id="soro-blog" className="soro-embed-wrapper"></div>
+          </div>
         </section>
 
         {/* ── CONTACT ── */}

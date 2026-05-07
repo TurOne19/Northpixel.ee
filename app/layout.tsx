@@ -82,6 +82,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Script>
 
 
+        {/* Soro blog embed */}
+        <Script
+          src="https://app.trysoro.com/api/embed/c1441b0e-92a4-4fec-b47c-a10a02e5b1e0"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   )
