@@ -102,7 +102,8 @@ export default function Home() {
   const [formData, setFormData] = useState({ name: '', contact: '', business: '', budget: '', message: '' })
   const [lightbox, setLightbox] = useState<{ link: string; title: string } | null>(null)
   const [blogLightbox, setBlogLightbox] = useState<{ title: string; content: string; date?: string; idx: number } | null>(null)
-  const [blogPosts, setBlogPosts] = useState<{ title: string; content: string; date?: string; excerpt?: string }[]>([])
+  const [blogPosts, setBlogPosts] = useState<{ title: string; content: string; date?: string; excerpt?: string; slug?: string; id?: string }[]>([])
+  const [lightboxLoading, setLightboxLoading] = useState(false)
   const t = locales[lang]
 
   useEffect(() => {
@@ -147,7 +148,7 @@ export default function Home() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [])
 
-  // ── BLOG: fetch posts via server-side proxy → Soro API → DOM fallback ──────
+  // ── BLOG ─────────────────────────────────────────────────────────────────
   useEffect(() => {
     const BLOG_ID = 'd872c3fb-ae74-4b04-9b16-cd4eaf34f084'
 
@@ -161,30 +162,31 @@ export default function Home() {
       } catch { return raw }
     }
 
-    const stripImages = (html: string): string => {
+    const stripImages = (html: string) => {
       const tmp = document.createElement('div')
       tmp.innerHTML = html
-      tmp.querySelectorAll('img, picture, figure, video, iframe, [class*="image"], [class*="media"], [class*="cover"], [class*="thumbnail"], [class*="banner"], [class*="hero"]').forEach(el => el.remove())
+      tmp.querySelectorAll('img,picture,figure,video,iframe,[class*="image"],[class*="media"],[class*="cover"],[class*="thumbnail"],[class*="banner"],[class*="hero"]').forEach(el => el.remove())
       return tmp.innerHTML
     }
 
-    const renderCards = (posts: { title: string; content: string; date?: string; excerpt?: string }[]) => {
+    const renderCards = (posts: { title: string; content: string; date?: string; excerpt?: string; slug?: string; id?: string }[]) => {
       if (!posts.length) return
       setBlogPosts(posts)
       const grid = document.getElementById('soro-blog-cards')
       if (!grid) return
       grid.innerHTML = ''
       grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;width:100%;max-width:1160px;margin:0 auto;'
-      const currentLang = document.documentElement.lang
-      const readLabel = currentLang === 'ru' ? 'Читать статью' : currentLang === 'et' ? 'Loe artiklit' : 'Read article'
+      const lang = document.documentElement.lang
+      const readLabel = lang === 'ru' ? 'Читать статью' : lang === 'et' ? 'Loe artiklit' : 'Read article'
       posts.forEach((post, idx) => {
         const card = document.createElement('div')
         card.className = 'card soro-card'
         card.style.cssText = 'padding:28px;cursor:pointer;display:flex;flex-direction:column;gap:12px;transition:transform 0.2s,box-shadow 0.2s;'
+        const excerptText = (post.excerpt || '').replace(/<[^>]+>/g, '').trim()
         card.innerHTML = `
           ${post.date ? `<div style="font-size:12px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">${post.date}</div>` : ''}
           <h3 style="font-size:17px;font-weight:700;letter-spacing:-0.01em;line-height:1.4;color:#eef2f7;margin:0;">${post.title}</h3>
-          <p style="color:var(--text-muted);font-size:13px;line-height:1.7;flex:1;margin:0;">${(post.excerpt || '').slice(0, 320)}${(post.excerpt || '').length > 320 ? '…' : ''}</p>
+          <p style="color:var(--text-muted);font-size:13px;line-height:1.7;flex:1;margin:0;">${excerptText.slice(0, 320)}${excerptText.length > 320 ? '…' : ''}</p>
           <div style="color:var(--accent);font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;margin-top:8px;">
             ${readLabel} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
           </div>
@@ -198,67 +200,79 @@ export default function Home() {
       })
     }
 
-    // ── 1. Try server-side proxy (bypasses Soro CORS/allowlist) ──────────────
+    // ── 1. Server-side proxy → Soro API (works when deployed on northpixel.ee) ──
     const tryApi = async () => {
       try {
         const res = await fetch('/api/soro', { cache: 'no-store' })
         if (!res.ok) return false
         const json = await res.json()
+        if (!json.ok || !Array.isArray(json.posts) || !json.posts.length) return false
 
-        // Normalise different possible Soro response shapes
-        const raw = json.data
-        let items: { title?: string; name?: string; content?: string; body?: string; excerpt?: string; description?: string; published_at?: string; created_at?: string; date?: string }[] = []
-
-        if (Array.isArray(raw)) items = raw
-        else if (raw?.posts && Array.isArray(raw.posts)) items = raw.posts
-        else if (raw?.data && Array.isArray(raw.data)) items = raw.data
-        else if (raw?.items && Array.isArray(raw.items)) items = raw.items
-        else if (raw?.results && Array.isArray(raw.results)) items = raw.results
-
-        if (!items.length) return false
-
-        const posts = items.map(item => ({
+        const posts = json.posts.map((item: Record<string, string>) => ({
           title: item.title || item.name || '',
-          content: stripImages(item.content || item.body || ''),
-          date: formatDate(item.published_at || item.created_at || item.date || ''),
-          excerpt: item.excerpt || item.description || (item.content || item.body || '').replace(/<[^>]+>/g, '').slice(0, 500),
-        })).filter(p => p.title)
+          // Use full content/body — strip images
+          content: stripImages(item.content || item.body || item.html || ''),
+          date: formatDate(item.published_at || item.publishedAt || item.created_at || item.createdAt || item.date || ''),
+          // Plain text excerpt from dedicated field OR from full content
+          excerpt: (item.excerpt || item.description || item.summary || '').replace(/<[^>]+>/g, '')
+                   || (item.content || item.body || '').replace(/<[^>]+>/g, '').slice(0, 500),
+          slug: item.slug || item.id || '',
+          id: item.id || '',
+        })).filter((p: { title: string }) => p.title)
 
         if (posts.length) { renderCards(posts); return true }
       } catch { /* fall through */ }
       return false
     }
 
-    // ── 2. DOM fallback: parse what Soro injected into the hidden div ────────
+    // ── 2. DOM fallback: parse what Soro injected into #soro-blog ────────────
     const tryDom = () => {
-      const soroRoot = document.getElementById('soro-blog')
-      if (!soroRoot) return false
-      const cards = soroRoot.querySelectorAll('[class*="post"], [class*="card"], [class*="article"], article, [data-slug], [data-id]')
+      const root = document.getElementById('soro-blog')
+      if (!root) return false
+      const cards = root.querySelectorAll('[class*="post"],[class*="card"],[class*="article"],article,[data-slug],[data-id]')
       if (!cards.length) return false
 
       const posts: { title: string; content: string; date?: string; excerpt?: string }[] = []
       const seen = new Set<string>()
+
       cards.forEach(card => {
         const titleEl = card.querySelector('[class*="title"],[class*="heading"],[itemprop="headline"],h1,h2,h3,h4')
-        const contentEl = card.querySelector('[class*="content"],[class*="body"],[itemprop="articleBody"]') || card
         const dateEl = card.querySelector('[class*="date"],[class*="time"],[itemprop="datePublished"],time')
+        // Get the article body — exclude title/date/tag elements
+        const bodyEl = card.querySelector('[class*="content"],[class*="body"],[class*="text"],[itemprop="articleBody"]')
         const excerptEl = card.querySelector('[class*="excerpt"],[class*="description"],p')
+
         const title = titleEl?.textContent?.trim() || ''
         if (!title || seen.has(title)) return
         seen.add(title)
+
         const rawDate = dateEl?.getAttribute('datetime') || dateEl?.textContent?.trim() || ''
+
+        // Build clean content: if bodyEl found use it, else use card minus title/date
+        let contentHtml = ''
+        if (bodyEl) {
+          contentHtml = stripImages(bodyEl.innerHTML)
+        } else {
+          // Clone card, remove title and date elements, use remainder
+          const clone = card.cloneNode(true) as Element
+          clone.querySelectorAll('h1,h2,h3,h4,[class*="title"],[class*="date"],[class*="time"],time').forEach(el => el.remove())
+          contentHtml = stripImages(clone.innerHTML)
+        }
+
+        const excerptText = excerptEl?.textContent?.trim() || card.textContent?.replace(title, '')?.trim() || ''
+
         posts.push({
           title,
-          content: stripImages(contentEl.innerHTML || ''),
+          content: contentHtml,
           date: formatDate(rawDate) || undefined,
-          excerpt: excerptEl?.textContent?.trim() || contentEl.textContent?.trim() || '',
+          excerpt: excerptText,
         })
       })
+
       if (posts.length) { renderCards(posts); return true }
       return false
     }
 
-    // Start: try API first, then poll DOM
     tryApi().then(ok => {
       if (!ok) {
         const interval = setInterval(() => { if (tryDom()) clearInterval(interval) }, 600)
@@ -267,14 +281,42 @@ export default function Home() {
     })
   }, [])
 
-  // Listen for blog card click events
+  // Listen for blog card click — open lightbox, fetch full content from API
   useEffect(() => {
-    const handler = (e: Event) => {
+    const handler = async (e: Event) => {
       const { idx } = (e as CustomEvent).detail
-      setBlogLightbox({ ...blogPosts[idx], idx })
+      const post = blogPosts[idx]
+      if (!post) return
+
+      // Show immediately with what we have (excerpt), then upgrade with full content
+      setBlogLightbox({ ...post, idx })
+
+      // Try to fetch full article content via server proxy
+      const key = post.slug || post.id
+      if (key) {
+        try {
+          setLightboxLoading(true)
+          const res = await fetch(`/api/soro?${post.slug ? 'slug' : 'id'}=${encodeURIComponent(key)}`, { cache: 'no-store' })
+          if (res.ok) {
+            const json = await res.json()
+            if (json.ok && json.post) {
+              const p = json.post
+              // Strip images from full content
+              const tmp = document.createElement('div')
+              tmp.innerHTML = p.content || p.body || p.html || ''
+              tmp.querySelectorAll('img,picture,figure,video,iframe').forEach(el => el.remove())
+              const fullContent = tmp.innerHTML
+              if (fullContent.trim()) {
+                setBlogLightbox(prev => prev && prev.idx === idx ? { ...prev, content: fullContent } : prev)
+              }
+            }
+          }
+        } catch { /* use what we have */ }
+        finally { setLightboxLoading(false) }
+      }
     }
-    window.addEventListener('open-blog-post', handler)
-    return () => window.removeEventListener('open-blog-post', handler)
+    window.addEventListener('open-blog-post', handler as EventListener)
+    return () => window.removeEventListener('open-blog-post', handler as EventListener)
   }, [blogPosts])
 
   const scrollTo = (id: string) => {
@@ -1066,6 +1108,12 @@ export default function Home() {
               </h1>
               {blogLightbox.date && (
                 <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 32 }}>{blogLightbox.date}</p>
+              )}
+              {lightboxLoading && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'spin 1s linear infinite' }}><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
+                  {lang === 'ru' ? 'Загрузка...' : lang === 'et' ? 'Laadimine...' : 'Loading...'}
+                </div>
               )}
               <div
                 className="soro-article-body"

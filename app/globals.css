@@ -73,6 +73,11 @@ h1, h2, h3 {
   animation: orbFloat 15s ease-in-out infinite;
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 @keyframes orbFloat {
   0%, 100% { transform: translate(0,0); }
   50% { transform: translate(24px, -18px); }
