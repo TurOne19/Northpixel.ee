@@ -875,10 +875,8 @@ export default function Home() {
               </p>
             </div>
             {/* Soro native embed — renders its own UI */}
-            <div id="soro-blog" className="soro-embed-wrapper"></div>
-            <script src="https://app.trysoro.com/api/embed/d872c3fb-ae74-4b04-9b16-cd4eaf34f084" defer></script>
-          </div>
-        </section>
+            <div id="soro-blog"></div>
+<script src="https://app.trysoro.com/api/embed/c1441b0e-92a4-4fec-b47c-a10a02e5b1e0" defer></script>
 
         {/* ── CONTACT ── */}
         <section id="contact" style={{ padding: '96px 24px', background: 'var(--bg-light)' }}>
