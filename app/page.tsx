@@ -951,8 +951,8 @@ export default function Home() {
 
             {/* Soro blog rendered as cards via JS after Soro loads */}
             <div id="soro-blog-cards" style={{ display: 'flex', justifyContent: 'center' }}></div>
-            {/* Hidden original soro mount point */}
-            <div id="soro-blog" style={{ display: 'none' }}></div>
+            {/* Hidden original soro mount point — forced English */}
+            <div id="soro-blog" data-lang="en" data-locale="en" lang="en" style={{ display: 'none' }}></div>
           </div>
         </section>
 

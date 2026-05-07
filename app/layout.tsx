@@ -52,7 +52,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        {/* Preconnect only to origins actually used */}
+        {/* Explicit favicon — forces browsers to use logo.svg, overrides any cached old icon */}
+        <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+        <link rel="shortcut icon" href="/logo.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/logo.svg" />
+
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://app.trysoro.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
@@ -76,9 +80,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           `}
         </Script>
 
-        {/* Soro blog — fully deferred */}
+        {/* Soro blog — fully deferred, forced English */}
+        <Script id="soro-lang" strategy="lazyOnload">
+          {`window.__soroLang = 'en';`}
+        </Script>
         <Script
-          src="https://app.trysoro.com/api/embed/e4fb3d9e-a149-4648-851d-64fcf07d2789"
+          src="https://app.trysoro.com/api/embed/e4fb3d9e-a149-4648-851d-64fcf07d2789?lang=en&locale=en"
           strategy="lazyOnload"
         />
       </body>
