@@ -192,20 +192,30 @@ export default function Home() {
         if (!title || seenTitles.has(title)) return
         seenTitles.add(title)
 
+        // Format date nicely — strip ugly ISO timestamps like 2026-05-07T14:49:03.552+00:00
+        const rawDate = dateEl?.getAttribute('datetime') || dateEl?.textContent?.trim() || ''
+        let formattedDate = ''
+        if (rawDate) {
+          try {
+            const d = new Date(rawDate)
+            formattedDate = !isNaN(d.getTime())
+              ? d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+              : rawDate
+          } catch { formattedDate = rawDate }
+        }
+
         // Get full content but remove images
         const rawContent = contentEl.innerHTML || ''
         const cleanContent = stripImages(rawContent)
 
-        // Extract plain text excerpt
-        const excerptRaw = excerptEl?.textContent?.trim() || ''
-        // Fallback: use plain text from content
-        const excerpt = excerptRaw || (contentEl.textContent?.trim().slice(0, 200) || '')
+        // Full plain text for excerpt — no truncation at source, card truncates for display
+        const excerptRaw = excerptEl?.textContent?.trim() || contentEl.textContent?.trim() || ''
 
         posts.push({
           title,
           content: cleanContent,
-          date: dateEl?.getAttribute('datetime') || dateEl?.textContent?.trim(),
-          excerpt,
+          date: formattedDate || undefined,
+          excerpt: excerptRaw,
         })
       })
 
@@ -230,7 +240,7 @@ export default function Home() {
           card.innerHTML = `
             ${post.date ? `<div style="font-size:12px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">${post.date}</div>` : ''}
             <h3 style="font-size:17px;font-weight:700;letter-spacing:-0.01em;line-height:1.4;color:#eef2f7;margin:0;">${post.title}</h3>
-            <p style="color:var(--text-muted);font-size:13px;line-height:1.7;flex:1;margin:0;">${(post.excerpt || '').slice(0, 180)}${(post.excerpt || '').length > 180 ? '…' : ''}</p>
+            <p style="color:var(--text-muted);font-size:13px;line-height:1.7;flex:1;margin:0;">${(post.excerpt || '').slice(0, 300)}${(post.excerpt || '').length > 300 ? '…' : ''}</p>
             <div style="color:var(--accent);font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;margin-top:8px;">
               ${readLabel} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
             </div>
