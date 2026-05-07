@@ -1,18 +1,16 @@
 import { ImageResponse } from 'next/og'
 
 export const size = { width: 32, height: 32 }
-export const contentType = 'image/png'
+export const contentType = 'image/svg+xml'
 
 export default function Icon() {
   return new ImageResponse(
     (
-      // eslint-disable-next-line @next/next/no-img-element
       <img
-        src="https://northpixel.ee/favicon.png"
+        src="https://northpixel.ee/logo.svg"
         width={32}
         height={32}
         alt="NorthPixel"
-        style={{ borderRadius: 6 }}
       />
     ),
     { ...size }

@@ -38,18 +38,18 @@ export const metadata: Metadata = {
     siteName: 'NorthPixel',
     locale: 'ru_RU',
     type: 'website',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'NorthPixel — сайты для бизнеса за 7 дней' }],
+    images: [{ url: '/logo.svg', width: 1200, height: 630, alt: 'NorthPixel' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'NorthPixel — сайты и лендинги за 7 дней',
     description: 'Создаём понятные сайты для бизнеса с фокусом на заявки.',
-    images: ['/og-image.png'],
+    images: ['/logo.svg'],
   },
   icons: {
-    icon: [{ url: '/favicon.png', type: 'image/png' }],
-    shortcut: '/favicon.png',
-    apple: '/favicon.png',
+    icon: [{ url: '/logo.svg', type: 'image/svg+xml' }],
+    shortcut: '/logo.svg',
+    apple: '/logo.svg',
   },
   alternates: { canonical: 'https://northpixel.ee' },
   robots: { index: true, follow: true },
@@ -59,19 +59,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru">
       <head>
-        {/* Preconnect to critical origins */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://app.trysoro.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
-        {/* Logo preload for LCP */}
         <link rel="preload" href="/logo.svg" as="image" type="image/svg+xml" />
       </head>
       <body className={`${inter.variable} ${playfair.variable}`}>
         {children}
 
-        {/* Google Analytics — fully deferred, non-blocking */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-XR5VNE2NYD"
           strategy="lazyOnload"
@@ -86,7 +83,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           `}
         </Script>
 
-        {/* Soro blog — fully deferred */}
         <Script
           src="https://app.trysoro.com/api/embed/e4fb3d9e-a149-4648-851d-64fcf07d2789"
           strategy="lazyOnload"
