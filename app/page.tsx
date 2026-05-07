@@ -101,6 +101,7 @@ export default function Home() {
   const [formState, setFormState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [formData, setFormData] = useState({ name: '', contact: '', business: '', budget: '', message: '' })
   const [lightbox, setLightbox] = useState<{ link: string; title: string } | null>(null)
+  const [blogLightbox, setBlogLightbox] = useState<{ title: string; content: string; date?: string; idx: number } | null>(null)
   const [blogPosts, setBlogPosts] = useState<{ title: string; content: string; date?: string; excerpt?: string }[]>([])
   const t = locales[lang]
 
@@ -136,17 +137,17 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    document.body.style.overflow = (menuOpen || lightbox) ? 'hidden' : ''
+    document.body.style.overflow = (menuOpen || lightbox || blogLightbox) ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
-  }, [menuOpen, lightbox])
+  }, [menuOpen, lightbox, blogLightbox])
 
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { setLightbox(null);  } }
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { setLightbox(null); setBlogLightbox(null) } }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
   }, [])
 
-  // Parse Soro blog cards from DOM — show only first post, open in Soro iframe
+  // Parse Soro blog posts into cards
   useEffect(() => {
     const tryParse = () => {
       const soroRoot = document.getElementById('soro-blog')
@@ -154,60 +155,72 @@ export default function Home() {
       const cards = soroRoot.querySelectorAll('[class*="card"], article, [data-slug]')
       if (!cards.length) return false
 
-      const posts: { title: string; content: string; date?: string; excerpt?: string; slug?: string }[] = []
+      const posts: { title: string; content: string; date?: string; excerpt?: string }[] = []
       const seenTitles = new Set<string>()
 
       cards.forEach(card => {
-        const titleEl = card.querySelector('h1, h2, h3, [class*="title"]')
-        const dateEl = card.querySelector('time, [class*="date"]')
-        const excerptEl = card.querySelector('p, [class*="excerpt"]')
-        const slugAttr = (card as HTMLElement).dataset?.slug || card.querySelector('[data-slug]')?.getAttribute('data-slug') || ''
+        const titleEl = card.querySelector('h1, h2, h3, [class*="title"], [itemprop="headline"]')
+        const contentEl = card.querySelector('[class*="content"], [class*="body"], [itemprop="articleBody"]') || card
+        const dateEl = card.querySelector('time, [class*="date"], [itemprop="datePublished"]')
+        const excerptEl = card.querySelector('p, [class*="excerpt"], [itemprop="description"]')
         const title = titleEl?.textContent?.trim() || ''
         if (!title || seenTitles.has(title)) return
         seenTitles.add(title)
         posts.push({
           title,
-          content: '',
+          content: contentEl.innerHTML || '',
           date: dateEl?.textContent?.trim(),
           excerpt: excerptEl?.textContent?.trim(),
-          slug: slugAttr,
         })
       })
 
-      if (!posts.length) return false
-      setBlogPosts(posts)
+      if (posts.length) {
+        setBlogPosts(posts)
 
-      // Render only the FIRST card
-      const grid = document.getElementById('soro-blog-cards')
-      if (!grid) return true
-      grid.innerHTML = ''
-      const post = posts[0]
-      const readLabel = document.documentElement.lang === 'ru' ? 'Читать статью' : document.documentElement.lang === 'et' ? 'Loe artiklit' : 'Read article'
-      const card = document.createElement('div')
-      card.className = 'card soro-card'
-      card.style.cssText = 'padding:28px;cursor:pointer;display:flex;flex-direction:column;gap:12px;max-width:480px;margin:0 auto;'
-      card.innerHTML = `
-        <div style="font-size:13px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">${post.date || ''}</div>
-        <h3 style="font-size:18px;font-weight:700;letter-spacing:-0.01em;line-height:1.4;color:#eef2f7;margin:0;">${post.title}</h3>
-        <p style="color:var(--text-muted);font-size:13px;line-height:1.7;flex:1;margin:0;">${(post.excerpt || '').slice(0, 160)}${(post.excerpt || '').length > 160 ? '…' : ''}</p>
-        <div style="color:var(--accent);font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;margin-top:8px;">
-          ${readLabel} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
-        </div>
-      `
-      const soroAnchor = soroRoot.querySelector('a.soro-blog-card[data-slug]') as HTMLAnchorElement | null
-        const slug = soroAnchor?.dataset?.slug || ''
+        const grid = document.getElementById('soro-blog-cards')
+        if (!grid) return true
+        grid.innerHTML = ''
+
+        // Show only the FIRST post as a card
+        const post = posts[0]
+        const readLabel = document.documentElement.lang === 'ru' ? 'Читать статью' : document.documentElement.lang === 'et' ? 'Loe artiklit' : 'Read article'
+        const card = document.createElement('div')
+        card.className = 'card soro-card'
+        card.style.cssText = 'padding:28px;cursor:pointer;display:flex;flex-direction:column;gap:12px;max-width:480px;margin:0 auto;'
+        card.innerHTML = `
+          <div style="font-size:13px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">${post.date || ''}</div>
+          <h3 style="font-size:18px;font-weight:700;letter-spacing:-0.01em;line-height:1.4;color:#eef2f7;">${post.title}</h3>
+          <p style="color:var(--text-muted);font-size:13px;line-height:1.7;flex:1;">${(post.excerpt || '').slice(0, 160)}${(post.excerpt || '').length > 160 ? '…' : ''}</p>
+          <div style="color:var(--accent);font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;margin-top:8px;">
+            ${readLabel} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
+          </div>
+        `
         card.addEventListener('click', () => {
-          if (slug) window.location.href = '/?post=' + slug
+          const event = new CustomEvent('open-blog-post', { detail: { idx: 0 } })
+          window.dispatchEvent(event)
         })
-      grid.appendChild(card)
-      return true
+        grid.appendChild(card)
+        return true
+      }
+      return false
     }
 
+    // Try immediately, then poll after Soro loads
     if (!tryParse()) {
       const interval = setInterval(() => { if (tryParse()) clearInterval(interval) }, 800)
       setTimeout(() => clearInterval(interval), 15000)
     }
   }, [])
+
+  // Listen for blog card click events
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { idx } = (e as CustomEvent).detail
+      setBlogLightbox({ ...blogPosts[idx], idx })
+    }
+    window.addEventListener('open-blog-post', handler)
+    return () => window.removeEventListener('open-blog-post', handler)
+  }, [blogPosts])
 
   const scrollTo = (id: string) => {
     setMenuOpen(false)
@@ -946,7 +959,95 @@ export default function Home() {
         </section>
 
         {/* ── BLOG LIGHTBOX ── */}
-        {/* Blog lightbox — not used, Soro handles article opening internally */}
+        {blogLightbox && (
+          <div
+            onClick={() => setBlogLightbox(null)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 200,
+              background: 'rgba(8,13,24,0.96)', backdropFilter: 'blur(20px)',
+              display: 'flex', flexDirection: 'column',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Header */}
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '16px 24px', borderBottom: '1px solid var(--border)',
+                flexShrink: 0,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <button
+                  onClick={() => setBlogLightbox(null)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4, fontSize: 20, lineHeight: 1 }}
+                >✕</button>
+                <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+                  {blogLightbox.idx + 1} / {blogPosts.length}
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => setBlogLightbox(prev => prev && prev.idx > 0 ? { ...blogPosts[prev.idx - 1], idx: prev.idx - 1 } : prev)}
+                  disabled={blogLightbox.idx === 0}
+                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 14px', color: 'var(--text-soft)', cursor: blogLightbox.idx === 0 ? 'not-allowed' : 'pointer', opacity: blogLightbox.idx === 0 ? 0.4 : 1, fontSize: 13 }}
+                >← {c('Пред.', 'Eelm.', 'Prev')}</button>
+                <button
+                  onClick={() => setBlogLightbox(prev => prev && prev.idx < blogPosts.length - 1 ? { ...blogPosts[prev.idx + 1], idx: prev.idx + 1 } : prev)}
+                  disabled={blogLightbox.idx === blogPosts.length - 1}
+                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 14px', color: 'var(--text-soft)', cursor: blogLightbox.idx === blogPosts.length - 1 ? 'not-allowed' : 'pointer', opacity: blogLightbox.idx === blogPosts.length - 1 ? 0.4 : 1, fontSize: 13 }}
+                >{c('След.', 'Järgm.', 'Next')} →</button>
+              </div>
+            </div>
+
+            {/* Article content */}
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{ flex: 1, overflowY: 'auto', padding: '40px 24px', maxWidth: 760, margin: '0 auto', width: '100%' }}
+            >
+              <h1 style={{ fontFamily: 'var(--font-inter)', fontSize: 'clamp(24px, 4vw, 36px)', fontWeight: 800, marginBottom: 16, letterSpacing: '-0.02em', lineHeight: 1.25 }}>
+                {blogLightbox.title}
+              </h1>
+              {blogLightbox.date && (
+                <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 32 }}>{blogLightbox.date}</p>
+              )}
+              <div
+                className="soro-article-body"
+                dangerouslySetInnerHTML={{ __html: blogLightbox.content }}
+              />
+
+              {/* CTA block */}
+              <div style={{
+                marginTop: 56, padding: '36px 32px', borderRadius: 20,
+                background: 'linear-gradient(135deg, rgba(79,156,249,0.08) 0%, rgba(167,139,250,0.06) 100%)',
+                border: '1px solid rgba(79,156,249,0.2)',
+                textAlign: 'center',
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}>
+                  NorthPixel
+                </div>
+                <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 'clamp(20px, 3vw, 26px)', fontWeight: 800, marginBottom: 12, letterSpacing: '-0.02em' }}>
+                  {c('Нужен сайт для бизнеса?', 'Vajate äri jaoks veebilehte?', 'Need a website for your business?')}
+                </h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: 15, lineHeight: 1.7, marginBottom: 24, maxWidth: 480, margin: '0 auto 24px' }}>
+                  {c(
+                    'Создаём современные сайты и лендинги с фокусом на заявки, клиентов и понятную структуру.',
+                    'Loome kaasaegseid veebilehti ja maandumislehti fookusega päringutele, klientidele ja selgele struktuurile.',
+                    'We build modern websites and landing pages focused on leads, clients and clear structure.'
+                  )}
+                </p>
+                <button
+                  className="btn-primary"
+                  onClick={() => { setBlogLightbox(null); setTimeout(() => scrollTo('contact'), 100) }}
+                  style={{ margin: '0 auto' }}
+                >
+                  {c('Обсудить проект', 'Arutle projekti', 'Discuss project')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── CONTACT ── */}
         <section id="contact" style={{ padding: '96px 24px', background: 'var(--bg-light)' }}>
