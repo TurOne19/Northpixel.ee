@@ -194,11 +194,11 @@ export default function Home() {
           ${readLabel} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
         </div>
       `
-      card.addEventListener('click', () => {
-        // Click the actual Soro card to navigate inside the Soro widget
-        const soroCards = document.querySelectorAll('#soro-blog [class*="card"], #soro-blog article')
-        if (soroCards[0]) (soroCards[0] as HTMLElement).click()
-      })
+      const soroAnchor = soroRoot.querySelector('a.soro-blog-card[data-slug]') as HTMLAnchorElement | null
+        const slug = soroAnchor?.dataset?.slug || ''
+        card.addEventListener('click', () => {
+          if (slug) window.location.href = '/?post=' + slug
+        })
       grid.appendChild(card)
       return true
     }
