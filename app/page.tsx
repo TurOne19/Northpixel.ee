@@ -101,7 +101,6 @@ export default function Home() {
   const [formState, setFormState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [formData, setFormData] = useState({ name: '', contact: '', business: '', budget: '', message: '' })
   const [lightbox, setLightbox] = useState<{ link: string; title: string } | null>(null)
-  const [blogLightbox, setBlogLightbox] = useState<{ title: string; content: string; date?: string; idx: number } | null>(null)
   const [blogPosts, setBlogPosts] = useState<{ title: string; content: string; date?: string; excerpt?: string }[]>([])
   const t = locales[lang]
 
@@ -137,98 +136,78 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    document.body.style.overflow = (menuOpen || lightbox || blogLightbox) ? 'hidden' : ''
+    document.body.style.overflow = (menuOpen || lightbox) ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
-  }, [menuOpen, lightbox, blogLightbox])
+  }, [menuOpen, lightbox])
 
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { setLightbox(null); setBlogLightbox(null) } }
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { setLightbox(null);  } }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
   }, [])
 
-  // Fetch blog posts from Soro API to get FULL article content (not just excerpts)
+  // Parse Soro blog cards from DOM — show only first post, open in Soro iframe
   useEffect(() => {
-    const SORO_ID = 'e4fb3d9e-a149-4648-851d-64fcf07d2789'
-    fetch(`https://app.trysoro.com/api/blogs/${SORO_ID}/posts?lang=en&locale=en`)
-      .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then((data: any) => {
-        const raw: any[] = data?.posts || data?.data || []
-        if (!raw.length) return
-        const posts = raw.map((p: any) => ({
-          title: p.title || '',
-          content: p.content || p.body || p.html || p.excerpt || '',
-          date: p.published_at
-            ? new Date(p.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-            : (p.date || ''),
-          excerpt: p.excerpt || p.description || '',
-        }))
-        setBlogPosts(posts)
-        renderCards(posts)
-      })
-      .catch(() => {
-        // Fallback: parse Soro DOM if API unavailable
-        const tryParse = () => {
-          const soroRoot = document.getElementById('soro-blog')
-          if (!soroRoot) return false
-          const cards = soroRoot.querySelectorAll('[class*="card"], article, [data-slug]')
-          if (!cards.length) return false
-          const posts: { title: string; content: string; date?: string; excerpt?: string }[] = []
-          const seen = new Set<string>()
-          cards.forEach(card => {
-            const title = card.querySelector('h1, h2, h3, [class*="title"]')?.textContent?.trim() || ''
-            if (!title || seen.has(title)) return
-            seen.add(title)
-            posts.push({
-              title,
-              content: card.innerHTML || '',
-              date: card.querySelector('time, [class*="date"]')?.textContent?.trim(),
-              excerpt: card.querySelector('p, [class*="excerpt"]')?.textContent?.trim(),
-            })
-          })
-          if (!posts.length) return false
-          setBlogPosts(posts)
-          renderCards(posts)
-          return true
-        }
-        if (!tryParse()) {
-          const iv = setInterval(() => { if (tryParse()) clearInterval(iv) }, 800)
-          setTimeout(() => clearInterval(iv), 10000)
-        }
+    const tryParse = () => {
+      const soroRoot = document.getElementById('soro-blog')
+      if (!soroRoot) return false
+      const cards = soroRoot.querySelectorAll('[class*="card"], article, [data-slug]')
+      if (!cards.length) return false
+
+      const posts: { title: string; content: string; date?: string; excerpt?: string; slug?: string }[] = []
+      const seenTitles = new Set<string>()
+
+      cards.forEach(card => {
+        const titleEl = card.querySelector('h1, h2, h3, [class*="title"]')
+        const dateEl = card.querySelector('time, [class*="date"]')
+        const excerptEl = card.querySelector('p, [class*="excerpt"]')
+        const slugAttr = (card as HTMLElement).dataset?.slug || card.querySelector('[data-slug]')?.getAttribute('data-slug') || ''
+        const title = titleEl?.textContent?.trim() || ''
+        if (!title || seenTitles.has(title)) return
+        seenTitles.add(title)
+        posts.push({
+          title,
+          content: '',
+          date: dateEl?.textContent?.trim(),
+          excerpt: excerptEl?.textContent?.trim(),
+          slug: slugAttr,
+        })
       })
 
-    function renderCards(posts: { title: string; content: string; date?: string; excerpt?: string }[]) {
+      if (!posts.length) return false
+      setBlogPosts(posts)
+
+      // Render only the FIRST card
       const grid = document.getElementById('soro-blog-cards')
-      if (!grid) return
+      if (!grid) return true
       grid.innerHTML = ''
+      const post = posts[0]
       const readLabel = document.documentElement.lang === 'ru' ? 'Читать статью' : document.documentElement.lang === 'et' ? 'Loe artiklit' : 'Read article'
-      posts.slice(0, 3).forEach((post, idx) => {
-        const card = document.createElement('div')
-        card.className = 'card soro-card'
-        card.style.cssText = 'padding:28px;cursor:pointer;display:flex;flex-direction:column;gap:12px;'
-        card.innerHTML = `
-          <div style="font-size:12px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">${post.date || ''}</div>
-          <h3 style="font-size:17px;font-weight:700;letter-spacing:-0.01em;line-height:1.4;color:#eef2f7;margin:0;">${post.title}</h3>
-          <p style="color:var(--text-muted);font-size:13px;line-height:1.7;flex:1;margin:0;">${(post.excerpt || '').slice(0, 140)}${(post.excerpt || '').length > 140 ? '…' : ''}</p>
-          <div style="color:var(--accent);font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;margin-top:4px;">
-            ${readLabel} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
-          </div>
-        `
-        card.addEventListener('click', () => window.dispatchEvent(new CustomEvent('open-blog-post', { detail: { idx } })))
-        grid.appendChild(card)
+      const card = document.createElement('div')
+      card.className = 'card soro-card'
+      card.style.cssText = 'padding:28px;cursor:pointer;display:flex;flex-direction:column;gap:12px;max-width:480px;margin:0 auto;'
+      card.innerHTML = `
+        <div style="font-size:13px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">${post.date || ''}</div>
+        <h3 style="font-size:18px;font-weight:700;letter-spacing:-0.01em;line-height:1.4;color:#eef2f7;margin:0;">${post.title}</h3>
+        <p style="color:var(--text-muted);font-size:13px;line-height:1.7;flex:1;margin:0;">${(post.excerpt || '').slice(0, 160)}${(post.excerpt || '').length > 160 ? '…' : ''}</p>
+        <div style="color:var(--accent);font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;margin-top:8px;">
+          ${readLabel} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
+        </div>
+      `
+      card.addEventListener('click', () => {
+        // Click the actual Soro card to navigate inside the Soro widget
+        const soroCards = document.querySelectorAll('#soro-blog [class*="card"], #soro-blog article')
+        if (soroCards[0]) (soroCards[0] as HTMLElement).click()
       })
+      grid.appendChild(card)
+      return true
+    }
+
+    if (!tryParse()) {
+      const interval = setInterval(() => { if (tryParse()) clearInterval(interval) }, 800)
+      setTimeout(() => clearInterval(interval), 15000)
     }
   }, [])
-
-  // Listen for blog card click events
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const { idx } = (e as CustomEvent).detail
-      setBlogLightbox({ ...blogPosts[idx], idx })
-    }
-    window.addEventListener('open-blog-post', handler)
-    return () => window.removeEventListener('open-blog-post', handler)
-  }, [blogPosts])
 
   const scrollTo = (id: string) => {
     setMenuOpen(false)
@@ -967,95 +946,7 @@ export default function Home() {
         </section>
 
         {/* ── BLOG LIGHTBOX ── */}
-        {blogLightbox && (
-          <div
-            onClick={() => setBlogLightbox(null)}
-            style={{
-              position: 'fixed', inset: 0, zIndex: 200,
-              background: 'rgba(8,13,24,0.96)', backdropFilter: 'blur(20px)',
-              display: 'flex', flexDirection: 'column',
-              overflow: 'hidden',
-            }}
-          >
-            {/* Header */}
-            <div
-              onClick={e => e.stopPropagation()}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '16px 24px', borderBottom: '1px solid var(--border)',
-                flexShrink: 0,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <button
-                  onClick={() => setBlogLightbox(null)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4, fontSize: 20, lineHeight: 1 }}
-                >✕</button>
-                <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>
-                  {blogLightbox.idx + 1} / {blogPosts.length}
-                </span>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  onClick={() => setBlogLightbox(prev => prev && prev.idx > 0 ? { ...blogPosts[prev.idx - 1], idx: prev.idx - 1 } : prev)}
-                  disabled={blogLightbox.idx === 0}
-                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 14px', color: 'var(--text-soft)', cursor: blogLightbox.idx === 0 ? 'not-allowed' : 'pointer', opacity: blogLightbox.idx === 0 ? 0.4 : 1, fontSize: 13 }}
-                >← {c('Пред.', 'Eelm.', 'Prev')}</button>
-                <button
-                  onClick={() => setBlogLightbox(prev => prev && prev.idx < blogPosts.length - 1 ? { ...blogPosts[prev.idx + 1], idx: prev.idx + 1 } : prev)}
-                  disabled={blogLightbox.idx === blogPosts.length - 1}
-                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 14px', color: 'var(--text-soft)', cursor: blogLightbox.idx === blogPosts.length - 1 ? 'not-allowed' : 'pointer', opacity: blogLightbox.idx === blogPosts.length - 1 ? 0.4 : 1, fontSize: 13 }}
-                >{c('След.', 'Järgm.', 'Next')} →</button>
-              </div>
-            </div>
-
-            {/* Article content */}
-            <div
-              onClick={e => e.stopPropagation()}
-              style={{ flex: 1, overflowY: 'auto', padding: '40px 24px', maxWidth: 760, margin: '0 auto', width: '100%' }}
-            >
-              <h1 style={{ fontFamily: 'var(--font-inter)', fontSize: 'clamp(24px, 4vw, 36px)', fontWeight: 800, marginBottom: 16, letterSpacing: '-0.02em', lineHeight: 1.25 }}>
-                {blogLightbox.title}
-              </h1>
-              {blogLightbox.date && (
-                <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 32 }}>{blogLightbox.date}</p>
-              )}
-              <div
-                className="soro-article-body"
-                dangerouslySetInnerHTML={{ __html: blogLightbox.content }}
-              />
-
-              {/* CTA block */}
-              <div style={{
-                marginTop: 56, padding: '36px 32px', borderRadius: 20,
-                background: 'linear-gradient(135deg, rgba(79,156,249,0.08) 0%, rgba(167,139,250,0.06) 100%)',
-                border: '1px solid rgba(79,156,249,0.2)',
-                textAlign: 'center',
-              }}>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}>
-                  NorthPixel
-                </div>
-                <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: 'clamp(20px, 3vw, 26px)', fontWeight: 800, marginBottom: 12, letterSpacing: '-0.02em' }}>
-                  {c('Нужен сайт для бизнеса?', 'Vajate äri jaoks veebilehte?', 'Need a website for your business?')}
-                </h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: 15, lineHeight: 1.7, marginBottom: 24, maxWidth: 480, margin: '0 auto 24px' }}>
-                  {c(
-                    'Создаём современные сайты и лендинги с фокусом на заявки, клиентов и понятную структуру.',
-                    'Loome kaasaegseid veebilehti ja maandumislehti fookusega päringutele, klientidele ja selgele struktuurile.',
-                    'We build modern websites and landing pages focused on leads, clients and clear structure.'
-                  )}
-                </p>
-                <button
-                  className="btn-primary"
-                  onClick={() => { setBlogLightbox(null); setTimeout(() => scrollTo('contact'), 100) }}
-                  style={{ margin: '0 auto' }}
-                >
-                  {c('Обсудить проект', 'Arutle projekti', 'Discuss project')}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Blog lightbox — not used, Soro handles article opening internally */}
 
         {/* ── CONTACT ── */}
         <section id="contact" style={{ padding: '96px 24px', background: 'var(--bg-light)' }}>
