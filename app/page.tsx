@@ -147,68 +147,76 @@ export default function Home() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [])
 
-  // Parse Soro blog posts into cards
+  // Fetch blog posts from Soro API to get FULL article content (not just excerpts)
   useEffect(() => {
-    const tryParse = () => {
-      const soroRoot = document.getElementById('soro-blog')
-      if (!soroRoot) return false
-      const cards = soroRoot.querySelectorAll('[class*="card"], article, [data-slug]')
-      if (!cards.length) return false
-
-      const posts: { title: string; content: string; date?: string; excerpt?: string }[] = []
-      const seenTitles = new Set<string>()
-
-      cards.forEach(card => {
-        const titleEl = card.querySelector('h1, h2, h3, [class*="title"], [itemprop="headline"]')
-        const contentEl = card.querySelector('[class*="content"], [class*="body"], [itemprop="articleBody"]') || card
-        const dateEl = card.querySelector('time, [class*="date"], [itemprop="datePublished"]')
-        const excerptEl = card.querySelector('p, [class*="excerpt"], [itemprop="description"]')
-        const title = titleEl?.textContent?.trim() || ''
-        if (!title || seenTitles.has(title)) return
-        seenTitles.add(title)
-        posts.push({
-          title,
-          content: contentEl.innerHTML || '',
-          date: dateEl?.textContent?.trim(),
-          excerpt: excerptEl?.textContent?.trim(),
-        })
+    const SORO_ID = 'e4fb3d9e-a149-4648-851d-64fcf07d2789'
+    fetch(`https://app.trysoro.com/api/blogs/${SORO_ID}/posts?lang=en&locale=en`)
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then((data: any) => {
+        const raw: any[] = data?.posts || data?.data || []
+        if (!raw.length) return
+        const posts = raw.map((p: any) => ({
+          title: p.title || '',
+          content: p.content || p.body || p.html || p.excerpt || '',
+          date: p.published_at
+            ? new Date(p.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+            : (p.date || ''),
+          excerpt: p.excerpt || p.description || '',
+        }))
+        setBlogPosts(posts)
+        renderCards(posts)
+      })
+      .catch(() => {
+        // Fallback: parse Soro DOM if API unavailable
+        const tryParse = () => {
+          const soroRoot = document.getElementById('soro-blog')
+          if (!soroRoot) return false
+          const cards = soroRoot.querySelectorAll('[class*="card"], article, [data-slug]')
+          if (!cards.length) return false
+          const posts: { title: string; content: string; date?: string; excerpt?: string }[] = []
+          const seen = new Set<string>()
+          cards.forEach(card => {
+            const title = card.querySelector('h1, h2, h3, [class*="title"]')?.textContent?.trim() || ''
+            if (!title || seen.has(title)) return
+            seen.add(title)
+            posts.push({
+              title,
+              content: card.innerHTML || '',
+              date: card.querySelector('time, [class*="date"]')?.textContent?.trim(),
+              excerpt: card.querySelector('p, [class*="excerpt"]')?.textContent?.trim(),
+            })
+          })
+          if (!posts.length) return false
+          setBlogPosts(posts)
+          renderCards(posts)
+          return true
+        }
+        if (!tryParse()) {
+          const iv = setInterval(() => { if (tryParse()) clearInterval(iv) }, 800)
+          setTimeout(() => clearInterval(iv), 10000)
+        }
       })
 
-      if (posts.length) {
-        setBlogPosts(posts)
-
-        const grid = document.getElementById('soro-blog-cards')
-        if (!grid) return true
-        grid.innerHTML = ''
-
-        // Show only the FIRST post as a card
-        const post = posts[0]
-        const readLabel = document.documentElement.lang === 'ru' ? 'Читать статью' : document.documentElement.lang === 'et' ? 'Loe artiklit' : 'Read article'
+    function renderCards(posts: { title: string; content: string; date?: string; excerpt?: string }[]) {
+      const grid = document.getElementById('soro-blog-cards')
+      if (!grid) return
+      grid.innerHTML = ''
+      const readLabel = document.documentElement.lang === 'ru' ? 'Читать статью' : document.documentElement.lang === 'et' ? 'Loe artiklit' : 'Read article'
+      posts.slice(0, 3).forEach((post, idx) => {
         const card = document.createElement('div')
         card.className = 'card soro-card'
-        card.style.cssText = 'padding:28px;cursor:pointer;display:flex;flex-direction:column;gap:12px;max-width:480px;margin:0 auto;'
+        card.style.cssText = 'padding:28px;cursor:pointer;display:flex;flex-direction:column;gap:12px;'
         card.innerHTML = `
-          <div style="font-size:13px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">${post.date || ''}</div>
-          <h3 style="font-size:18px;font-weight:700;letter-spacing:-0.01em;line-height:1.4;color:#eef2f7;">${post.title}</h3>
-          <p style="color:var(--text-muted);font-size:13px;line-height:1.7;flex:1;">${(post.excerpt || '').slice(0, 160)}${(post.excerpt || '').length > 160 ? '…' : ''}</p>
-          <div style="color:var(--accent);font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;margin-top:8px;">
+          <div style="font-size:12px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">${post.date || ''}</div>
+          <h3 style="font-size:17px;font-weight:700;letter-spacing:-0.01em;line-height:1.4;color:#eef2f7;margin:0;">${post.title}</h3>
+          <p style="color:var(--text-muted);font-size:13px;line-height:1.7;flex:1;margin:0;">${(post.excerpt || '').slice(0, 140)}${(post.excerpt || '').length > 140 ? '…' : ''}</p>
+          <div style="color:var(--accent);font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;margin-top:4px;">
             ${readLabel} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
           </div>
         `
-        card.addEventListener('click', () => {
-          const event = new CustomEvent('open-blog-post', { detail: { idx: 0 } })
-          window.dispatchEvent(event)
-        })
+        card.addEventListener('click', () => window.dispatchEvent(new CustomEvent('open-blog-post', { detail: { idx } })))
         grid.appendChild(card)
-        return true
-      }
-      return false
-    }
-
-    // Try immediately, then poll after Soro loads
-    if (!tryParse()) {
-      const interval = setInterval(() => { if (tryParse()) clearInterval(interval) }, 800)
-      setTimeout(() => clearInterval(interval), 15000)
+      })
     }
   }, [])
 
