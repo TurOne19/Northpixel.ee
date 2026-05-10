@@ -7,7 +7,7 @@ export default function Icon() {
   return new ImageResponse(
     (
       <img
-        src="/Northpixel.ee/public/logo.svg"
+        src="https://northpixel.ee/logo.svg"
         width={32}
         height={32}
         alt="NorthPixel"
