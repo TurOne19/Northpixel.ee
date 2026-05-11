@@ -2,13 +2,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Cookie Policy | NorthPixel',
-  description: 'Cookie Policy for NorthPixel web design services.',
-  keywords: [],
-  alternates: {
-    canonical: 'https://northpixel.ee/cookies',
-  },
   robots: { index: false, follow: false },
-  openGraph: { title: 'Cookie Policy | NorthPixel', description: 'Cookie Policy for NorthPixel.' },
 }
 
 export default function Cookies() {
