@@ -2,7 +2,15 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Terms of Service | NorthPixel',
+  // Явно задаём description и keywords, чтобы не наследовать SEO-описание главной страницы.
+  // Это устраняет ситуацию, когда Google ранжирует /terms по запросам типа "web design estonia".
+  description: 'Terms of Service for NorthPixel web design services.',
+  keywords: [],
+  alternates: {
+    canonical: 'https://northpixel.ee/terms',
+  },
   robots: { index: false, follow: false },
+  openGraph: { title: 'Terms of Service | NorthPixel', description: 'Terms of Service for NorthPixel.' },
 }
 
 export default function Terms() {

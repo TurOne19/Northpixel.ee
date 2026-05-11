@@ -2,7 +2,13 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | NorthPixel',
+  description: 'Privacy Policy for NorthPixel web design services.',
+  keywords: [],
+  alternates: {
+    canonical: 'https://northpixel.ee/privacy',
+  },
   robots: { index: false, follow: false },
+  openGraph: { title: 'Privacy Policy | NorthPixel', description: 'Privacy Policy for NorthPixel.' },
 }
 
 export default function Privacy() {

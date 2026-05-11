@@ -124,8 +124,14 @@ export default function Home() {
 
   useEffect(() => {
     document.documentElement.lang = lang
-    // Title stays in English for Google indexing regardless of UI language
-    document.title = 'NorthPixel — websites and landing pages for business in 7 days'
+    // Обновляем title в зависимости от языка (для browser tab / analytics)
+    // Для Google-индексации title берётся из metadata в layout.tsx (SSR).
+    const titles: Record<string, string> = {
+      en: 'NorthPixel — websites and landing pages for business in 7 days',
+      ru: 'NorthPixel — сайты и лендинги для бизнеса за 7 дней',
+      et: 'NorthPixel — veebilehed ja maandumislehed äriklientidele 7 päevaga',
+    }
+    document.title = titles[lang] || titles.en
   }, [lang])
 
   useEffect(() => {
