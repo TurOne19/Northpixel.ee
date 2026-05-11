@@ -386,3 +386,42 @@ select.form-input option { background: #0f1726; color: #eef2f7; }
 }
 
 
+
+/* ── Article reader body (Soro HTML content) ─────────────────────────────── */
+.article-body { color: var(--text-soft); font-size: 16px; line-height: 1.85; }
+.article-body h1,
+.article-body h2,
+.article-body h3,
+.article-body h4 { font-family: var(--font-inter); color: var(--text); font-weight: 700; letter-spacing: -0.02em; margin: 2em 0 0.75em; line-height: 1.25; }
+.article-body h2 { font-size: clamp(20px, 3vw, 26px); }
+.article-body h3 { font-size: clamp(17px, 2.5vw, 20px); }
+.article-body p  { margin-bottom: 1.25em; }
+.article-body ul,
+.article-body ol { padding-left: 1.5em; margin-bottom: 1.25em; }
+.article-body li { margin-bottom: 0.5em; }
+.article-body a  { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(79,156,249,0.3); transition: border-color 0.2s; }
+.article-body a:hover { border-color: var(--accent); }
+.article-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 14px 20px;
+  margin: 1.5em 0;
+  background: var(--bg-card);
+  border-radius: 0 10px 10px 0;
+  color: var(--text-soft);
+  font-style: italic;
+}
+.article-body code {
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-size: 0.875em;
+  font-family: 'Fira Code', 'Cascadia Code', monospace;
+  color: var(--accent-2);
+}
+.article-body pre { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; overflow-x: auto; margin-bottom: 1.5em; }
+.article-body pre code { background: none; border: none; padding: 0; }
+.article-body img { max-width: 100%; height: auto; border-radius: 10px; margin: 1.5em 0; display: block; }
+.article-body hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+.article-body strong,
+.article-body b { color: var(--text); font-weight: 700; }

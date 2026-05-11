@@ -30,7 +30,9 @@ export const metadata: Metadata = {
     template: '%s | NorthPixel',
   },
   description: 'We build modern websites and landing pages for business. Clear structure, design and launch in 7 days. Get leads through your website.',
-  keywords: ['website for business', 'landing page tallinn', 'web design estonia', 'build website fast', 'northpixel'],
+  // NOTE: keywords здесь намеренно не задаём глобально —
+  // чтобы юридические страницы (terms/privacy/cookies) не наследовали
+  // поисковые ключевые слова главной страницы.
   openGraph: {
     title: 'NorthPixel — websites and landing pages in 7 days',
     description: 'We build clear websites for business focused on leads. Fast launch and modern design.',
@@ -44,7 +46,17 @@ export const metadata: Metadata = {
     title: 'NorthPixel — websites and landing pages in 7 days',
     description: 'We build clear websites for business focused on leads.',
   },
-  alternates: { canonical: 'https://northpixel.ee' },
+  // Canonical + hreflang для одноURL мультиязычного сайта
+  // Все три языка живут на одном URL — сигнализируем это Google через alternates.
+  alternates: {
+    canonical: 'https://northpixel.ee',
+    languages: {
+      'en': 'https://northpixel.ee',
+      'ru': 'https://northpixel.ee',
+      'et': 'https://northpixel.ee',
+      'x-default': 'https://northpixel.ee',
+    },
+  },
   robots: { index: true, follow: true },
 }
 
