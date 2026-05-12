@@ -151,94 +151,40 @@ export default function Home() {
     return () => { document.body.style.overflow = '' }
   }, [menuOpen, lightbox, articleLightboxIdx])
 
-  // ── Soro blog — wait for Soro to populate #soro-blog, then extract data ──
+  // ── Soro blog — read window.SORO_ARTICLES set by the Soro embed script ──
   useEffect(() => {
-    // Convert Soro global article objects to our format
-    const mapArticles = (raw: Array<{
-      id: string; title: string; date: string; isoDate: string;
-      excerpt: string; image?: string; slug: string
-    }>) => raw.map((a, i) => ({
-      id: i,
-      soroId: a.id,
-      slug: a.slug,
-      title: a.title || '',
-      date: a.date || '',
-      excerpt: a.excerpt || '',
-      image: a.image || '',
-      html: '',
-    }))
-
-    // Try reading window.SORO_ARTICLES (set by Soro script)
-    const tryFromGlobal = (): boolean => {
+    const tryLoad = (): boolean => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const raw = (window as any).SORO_ARTICLES
-      if (Array.isArray(raw) && raw.length > 0) {
-        const mapped = mapArticles(raw)
-        soroArticlesRef.current = mapped
-        setSoroArticles(mapped)
-        return true
-      }
-      return false
+      if (!Array.isArray(raw) || raw.length === 0) return false
+      const mapped = (raw as Array<{
+        id: string; title: string; date: string; isoDate: string;
+        excerpt: string; image?: string; slug: string
+      }>).map((a, i) => ({
+        id: i,
+        soroId: a.id,
+        slug: a.slug,
+        title: a.title || '',
+        date: a.date || '',
+        excerpt: a.excerpt || '',
+        image: a.image || '',
+        html: '',
+      }))
+      soroArticlesRef.current = mapped
+      setSoroArticles(mapped)
+      return true
     }
 
-    // Try extracting article cards from the Soro-rendered DOM
-    const tryFromDom = (): boolean => {
-      const container = document.getElementById('soro-blog')
-      if (!container || container.children.length === 0) return false
+    if (tryLoad()) return
 
-      let els: Element[] = []
-      for (const sel of ['.soro-blog-card', 'a[data-slug]', 'article', '.soro-post', '.blog-post', '.post-card']) {
-        const found = container.querySelectorAll(sel)
-        if (found.length > 0) { els = Array.from(found); break }
-      }
-      if (els.length === 0) els = Array.from(container.querySelectorAll('a')).filter(a => a.getAttribute('data-slug'))
-      if (els.length === 0) return false
-
-      const articles = els.map((el, i) => {
-        const titleEl  = el.querySelector('h1,h2,h3,h4,[class*="title"],[class*="heading"]')
-        const dateEl   = el.querySelector('time,[class*="date"]')
-        const excerpEl = el.querySelector('[class*="excerpt"],[class*="description"],p')
-        const imgEl    = el.querySelector('img') as HTMLImageElement | null
-        const slug     = el.getAttribute('data-slug') || `article-${i}`
-        return {
-          id: i,
-          soroId: el.getAttribute('data-id') || slug,
-          slug,
-          title:   titleEl?.textContent?.trim() || `Article ${i + 1}`,
-          date:    dateEl?.textContent?.trim()  || '',
-          excerpt: excerpEl?.textContent?.trim() || '',
-          image:   imgEl?.src || '',
-          html:    '',
-        }
-      }).filter(a => a.title.length > 0)
-
-      if (articles.length > 0) {
-        soroArticlesRef.current = articles
-        setSoroArticles(articles)
-        return true
-      }
-      return false
-    }
-
-    if (tryFromGlobal()) return
-
-    // Observe #soro-blog for DOM changes AND poll window.SORO_ARTICLES
-    const container = document.getElementById('soro-blog')
-    if (!container) return
-
-    const obs = new MutationObserver(() => {
-      if (tryFromGlobal() || tryFromDom()) obs.disconnect()
-    })
-    obs.observe(container, { childList: true, subtree: true })
-
+    // Poll every 200ms until window.SORO_ARTICLES is ready (max 15s)
     let attempts = 0
     const interval = setInterval(() => {
       attempts++
-      if (tryFromGlobal() || tryFromDom()) { clearInterval(interval); obs.disconnect() }
-      if (attempts > 100) clearInterval(interval)
-    }, 100)
+      if (tryLoad() || attempts > 75) clearInterval(interval)
+    }, 200)
 
-    return () => { obs.disconnect(); clearInterval(interval) }
+    return () => clearInterval(interval)
   }, [])
 
   // Fetch full article HTML from Soro API when opening lightbox
@@ -249,21 +195,10 @@ export default function Home() {
     const SORO_TOKEN    = 'c1441b0e-92a4-4fec-b47c-a10a02e5b1e0'
     try {
       const res = await fetch(`${SORO_API_BASE}/api/embed/${SORO_TOKEN}/article/${art.soroId}`)
-      if (!res.ok) {
-        // Fallback: try by slug
-        const res2 = await fetch(`${SORO_API_BASE}/api/embed/${SORO_TOKEN}/article/${art.slug}`)
-        if (!res2.ok) return
-        const data2 = await res2.json()
-        setSoroArticles(prev => {
-          const next = prev.map((a, i) => i === idx ? { ...a, html: data2.content || '<p>Failed to load.</p>' } : a)
-          soroArticlesRef.current = next
-          return next
-        })
-        return
-      }
+      if (!res.ok) return
       const data = await res.json()
       setSoroArticles(prev => {
-        const next = prev.map((a, i) => i === idx ? { ...a, html: data.content || '<p>Failed to load.</p>' } : a)
+        const next = prev.map((a, i) => i === idx ? { ...a, html: data.content || '' } : a)
         soroArticlesRef.current = next
         return next
       })
