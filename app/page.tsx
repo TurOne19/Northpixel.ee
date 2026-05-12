@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { brand, locales, Lang } from '@/lib/content'
 
 // ─── Aquapark hero preview — real background photo ────────────────────────────
@@ -106,6 +106,7 @@ export default function Home() {
   }>>([])
   const [articlesExpanded, setArticlesExpanded] = useState(false)
   const [articleLightboxIdx, setArticleLightboxIdx] = useState<number | null>(null)
+  const soroArticlesRef = useRef<typeof soroArticles>([])
   const t = locales[lang]
 
   useEffect(() => {
@@ -172,7 +173,9 @@ export default function Home() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const raw = (window as any).SORO_ARTICLES
       if (Array.isArray(raw) && raw.length > 0) {
-        setSoroArticles(mapArticles(raw))
+        const mapped = mapArticles(raw)
+        soroArticlesRef.current = mapped
+        setSoroArticles(mapped)
         return true
       }
       return false
@@ -209,7 +212,11 @@ export default function Home() {
         }
       }).filter(a => a.title.length > 0)
 
-      if (articles.length > 0) { setSoroArticles(articles); return true }
+      if (articles.length > 0) {
+        soroArticlesRef.current = articles
+        setSoroArticles(articles)
+        return true
+      }
       return false
     }
 
@@ -236,15 +243,30 @@ export default function Home() {
 
   // Fetch full article HTML from Soro API when opening lightbox
   const loadArticleContent = async (idx: number) => {
-    const art = soroArticles[idx]
+    const art = soroArticlesRef.current[idx]
     if (!art || art.html) return // already loaded
     const SORO_API_BASE = 'https://app.trysoro.com'
     const SORO_TOKEN    = 'c1441b0e-92a4-4fec-b47c-a10a02e5b1e0'
     try {
       const res = await fetch(`${SORO_API_BASE}/api/embed/${SORO_TOKEN}/article/${art.soroId}`)
-      if (!res.ok) return
+      if (!res.ok) {
+        // Fallback: try by slug
+        const res2 = await fetch(`${SORO_API_BASE}/api/embed/${SORO_TOKEN}/article/${art.slug}`)
+        if (!res2.ok) return
+        const data2 = await res2.json()
+        setSoroArticles(prev => {
+          const next = prev.map((a, i) => i === idx ? { ...a, html: data2.content || '<p>Failed to load.</p>' } : a)
+          soroArticlesRef.current = next
+          return next
+        })
+        return
+      }
       const data = await res.json()
-      setSoroArticles(prev => prev.map((a, i) => i === idx ? { ...a, html: data.content || '' } : a))
+      setSoroArticles(prev => {
+        const next = prev.map((a, i) => i === idx ? { ...a, html: data.content || '<p>Failed to load.</p>' } : a)
+        soroArticlesRef.current = next
+        return next
+      })
     } catch { /* ignore */ }
   }
 
