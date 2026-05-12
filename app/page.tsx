@@ -151,37 +151,66 @@ export default function Home() {
     return () => { document.body.style.overflow = '' }
   }, [menuOpen, lightbox, articleLightboxIdx])
 
-  // ── Soro blog — read window.SORO_ARTICLES set by the Soro embed script ──
+  // ── Soro blog ── static seed + live updates from window.SORO_ARTICLES ──
   useEffect(() => {
-    const tryLoad = (): boolean => {
+    // Static seed from Soro embed script (always up to date at deploy time)
+    const SEED = [
+      {
+        id: '0e71f5eb-0af8-4536-9822-485bf345cd80',
+        slug: 'kiire-veebilehe-tegemine',
+        title: 'Kiire veebilehe tegemine that brings leads',
+        date: 'May 11, 2026',
+        excerpt: 'Kiire veebilehe tegemine works when the site is built to generate leads, build trust, and launch fast without wasting time on extras.',
+        image: 'https://afocirmbqdxnkyescnev.supabase.co/storage/v1/object/public/featured-images/009aea0d-be41-4e6c-a094-2361085d5ed4/0e71f5eb-0af8-4536-9822-485bf345cd80.webp',
+      },
+      {
+        id: '2ace7a0f-06f0-4d93-b65b-f5c903184c7f',
+        slug: 'miks-koduleht-ei-too-kliente',
+        title: 'Miks koduleht ei too kliente? 9 põhjust',
+        date: 'May 9, 2026',
+        excerpt: 'Miks koduleht ei too kliente? Vaata 9 levinud põhjust, miks veeb ei too päringuid, ja mida muuta, et rohkem külastajaid võtaks ühendust.',
+        image: 'https://afocirmbqdxnkyescnev.supabase.co/storage/v1/object/public/featured-images/009aea0d-be41-4e6c-a094-2361085d5ed4/2ace7a0f-06f0-4d93-b65b-f5c903184c7f.webp',
+      },
+      {
+        id: '09d4ce73-7e01-4e53-8703-f318a6537a77',
+        slug: 'professional-website-for-consultants',
+        title: 'Professional Website for Consultants That Converts',
+        date: 'May 7, 2026',
+        excerpt: 'A professional website for consultants builds trust, shows expertise, and turns visitors into inquiries with clear messaging and strong structure.',
+        image: 'https://afocirmbqdxnkyescnev.supabase.co/storage/v1/object/public/featured-images/009aea0d-be41-4e6c-a094-2361085d5ed4/09d4ce73-7e01-4e53-8703-f318a6537a77.webp',
+      },
+    ]
+
+    const toMapped = (arr: typeof SEED) => arr.map((a, i) => ({
+      id: i, soroId: a.id, slug: a.slug,
+      title: a.title, date: a.date, excerpt: a.excerpt, image: a.image, html: '',
+    }))
+
+    // Load seed immediately so cards show right away
+    const seedMapped = toMapped(SEED)
+    soroArticlesRef.current = seedMapped
+    setSoroArticles(seedMapped)
+
+    // Then try to get live list from Soro (may have newer articles)
+    const tryLive = (): boolean => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const raw = (window as any).SORO_ARTICLES
       if (!Array.isArray(raw) || raw.length === 0) return false
-      const mapped = (raw as Array<{
-        id: string; title: string; date: string; isoDate: string;
-        excerpt: string; image?: string; slug: string
-      }>).map((a, i) => ({
-        id: i,
-        soroId: a.id,
-        slug: a.slug,
-        title: a.title || '',
-        date: a.date || '',
-        excerpt: a.excerpt || '',
-        image: a.image || '',
-        html: '',
-      }))
-      soroArticlesRef.current = mapped
-      setSoroArticles(mapped)
+      const live = toMapped(raw.map((a: { id: string; title: string; date: string; isoDate: string; excerpt: string; image?: string; slug: string }) => ({
+        id: a.id, slug: a.slug, title: a.title || '',
+        date: a.date || '', excerpt: a.excerpt || '', image: a.image || '',
+      })))
+      soroArticlesRef.current = live
+      setSoroArticles(live)
       return true
     }
 
-    if (tryLoad()) return
+    if (tryLive()) return
 
-    // Poll every 200ms until window.SORO_ARTICLES is ready (max 15s)
     let attempts = 0
     const interval = setInterval(() => {
       attempts++
-      if (tryLoad() || attempts > 75) clearInterval(interval)
+      if (tryLive() || attempts > 75) clearInterval(interval)
     }, 200)
 
     return () => clearInterval(interval)
