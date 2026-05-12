@@ -101,6 +101,11 @@ export default function Home() {
   const [formState, setFormState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [formData, setFormData] = useState({ name: '', contact: '', business: '', budget: '', message: '' })
   const [lightbox, setLightbox] = useState<{ link: string; title: string } | null>(null)
+  const [soroArticles, setSoroArticles] = useState<Array<{
+    id: number; title: string; date: string; excerpt: string; html: string; image: string;
+  }>>([])
+  const [articlesExpanded, setArticlesExpanded] = useState(false)
+  const [articleLightboxIdx, setArticleLightboxIdx] = useState<number | null>(null)
   const t = locales[lang]
 
   useEffect(() => {
@@ -141,15 +146,64 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    document.body.style.overflow = (menuOpen || lightbox) ? 'hidden' : ''
+    document.body.style.overflow = (menuOpen || lightbox || articleLightboxIdx !== null) ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
-  }, [menuOpen, lightbox])
+  }, [menuOpen, lightbox, articleLightboxIdx])
+
+  // ── Soro blog extraction ──────────────────────────────────────────────────
+  useEffect(() => {
+    const container = document.getElementById('soro-blog')
+    if (!container) return
+
+    const extract = (): boolean => {
+      if (container.children.length === 0) return false
+
+      // Try known selectors, then fall back to direct children
+      let els: Element[] = []
+      for (const sel of ['article', '.soro-post', '.blog-post', '.post-card', '.post-item', '.entry']) {
+        const found = container.querySelectorAll(sel)
+        if (found.length > 0) { els = Array.from(found); break }
+      }
+      if (els.length === 0) els = Array.from(container.children)
+      if (els.length === 0) return false
+
+      const articles = els.map((el, i) => {
+        const titleEl  = el.querySelector('h1,h2,h3,h4,[class*="title"],[class*="heading"]')
+        const dateEl   = el.querySelector('time,[class*="date"],[class*="time"]')
+        const excerpEl = el.querySelector('[class*="excerpt"],[class*="summary"],[class*="description"],p')
+        const imgEl    = el.querySelector('img') as HTMLImageElement | null
+        return {
+          id: i,
+          title:   titleEl?.textContent?.trim()  || '',
+          date:    dateEl?.textContent?.trim()   || '',
+          excerpt: excerpEl?.textContent?.trim() || '',
+          html:    el.outerHTML,
+          image:   imgEl?.src || '',
+        }
+      }).filter(a => a.title || a.html.length > 100)
+
+      if (articles.length > 0) { setSoroArticles(articles); return true }
+      return false
+    }
+
+    if (!extract()) {
+      const obs = new MutationObserver(() => { if (extract()) obs.disconnect() })
+      obs.observe(container, { childList: true, subtree: true })
+      return () => obs.disconnect()
+    }
+  }, [])
 
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { setLightbox(null) } }
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setLightbox(null); setArticleLightboxIdx(null) }
+      if (articleLightboxIdx !== null) {
+        if (e.key === 'ArrowLeft' && articleLightboxIdx > 0) setArticleLightboxIdx(i => i !== null ? i - 1 : null)
+        if (e.key === 'ArrowRight' && articleLightboxIdx < soroArticles.length - 1) setArticleLightboxIdx(i => i !== null ? i + 1 : null)
+      }
+    }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [])
+  }, [articleLightboxIdx, soroArticles.length])
 
 
   const scrollTo = (id: string) => {
@@ -186,6 +240,7 @@ export default function Home() {
     { label: lang === 'ru' ? 'Примеры' : lang === 'et' ? 'Tööd' : 'Work', id: 'work' },
     { label: lang === 'ru' ? 'Пакеты' : lang === 'et' ? 'Hinnad' : 'Pricing', id: 'pricing' },
     { label: 'FAQ', id: 'faq' },
+    { label: 'Blog', id: 'blog' },
   ]
 
   const c = (ru: string, et: string, en: string) => lang === 'ru' ? ru : lang === 'et' ? et : en
@@ -337,6 +392,20 @@ export default function Home() {
               }}>
                 🔒 {lightbox.link.replace('https://', '')}
               </div>
+              <a
+                href={lightbox.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  background: 'var(--accent)', color: 'white', padding: '5px 14px',
+                  borderRadius: 8, fontSize: 12, fontWeight: 700,
+                  textDecoration: 'none', flexShrink: 0, letterSpacing: '-0.01em',
+                  display: 'flex', alignItems: 'center', gap: 5,
+                }}
+              >
+                {c('Перейти на сайт', 'Ava sait', 'Visit Site')}
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M7 17L17 7M7 7h10v10"/></svg>
+              </a>
               <button
                 onClick={() => setLightbox(null)}
                 style={{
@@ -362,8 +431,130 @@ export default function Home() {
         </div>
       )}
 
+      {/* ── ARTICLE LIGHTBOX ── */}
+      {articleLightboxIdx !== null && soroArticles[articleLightboxIdx] && (() => {
+        const art = soroArticles[articleLightboxIdx]
+        const hasPrev = articleLightboxIdx > 0
+        const hasNext = articleLightboxIdx < soroArticles.length - 1
+        return (
+          <div
+            onClick={() => setArticleLightboxIdx(null)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 10000,
+              background: 'rgba(0,0,0,0.96)', backdropFilter: 'blur(24px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '16px', animation: 'fadeIn 0.2s ease',
+            }}
+          >
+            <style>{`
+              .art-body h1,.art-body h2,.art-body h3,.art-body h4{color:#fff;font-family:var(--font-inter);font-weight:700;margin:1.4em 0 0.5em;letter-spacing:-0.02em}
+              .art-body p{color:var(--text-soft);line-height:1.85;margin-bottom:1.1em;font-size:15px}
+              .art-body img{width:100%;border-radius:12px;margin:1.2em 0}
+              .art-body a{color:var(--accent);text-underline-offset:3px}
+              .art-body ul,.art-body ol{color:var(--text-soft);line-height:1.8;padding-left:22px;margin-bottom:1em}
+              .art-body li{margin-bottom:0.4em;font-size:15px}
+              .art-body strong,.art-body b{color:white}
+              .art-body blockquote{border-left:3px solid var(--accent);padding-left:16px;margin:1.4em 0;color:var(--text-muted);font-style:italic}
+              .art-body code{background:rgba(79,156,249,0.1);padding:2px 7px;border-radius:5px;font-size:13px}
+              .art-body *{box-sizing:border-box}
+            `}</style>
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                position: 'relative', width: '100%', maxWidth: 760,
+                height: '90vh', borderRadius: 20, overflow: 'hidden',
+                background: 'var(--bg-card)', border: '1px solid rgba(255,255,255,0.08)',
+                boxShadow: '0 40px 120px rgba(0,0,0,0.8)',
+                display: 'flex', flexDirection: 'column',
+              }}
+            >
+              {/* Top bar */}
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '12px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)',
+                flexShrink: 0, gap: 12, background: 'rgba(8,13,24,0.98)',
+              }}>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {[
+                    { label: '← Prev', active: hasPrev, action: () => hasPrev && setArticleLightboxIdx(articleLightboxIdx - 1) },
+                    { label: 'Next →', active: hasNext, action: () => hasNext && setArticleLightboxIdx(articleLightboxIdx + 1) },
+                  ].map(({ label, active, action }) => (
+                    <button
+                      key={label}
+                      onClick={action}
+                      disabled={!active}
+                      style={{
+                        background: active ? 'rgba(79,156,249,0.1)' : 'rgba(255,255,255,0.03)',
+                        border: `1px solid ${active ? 'rgba(79,156,249,0.25)' : 'rgba(255,255,255,0.05)'}`,
+                        color: active ? 'var(--accent)' : 'rgba(255,255,255,0.2)',
+                        borderRadius: 8, cursor: active ? 'pointer' : 'default',
+                        padding: '5px 12px', fontSize: 12, fontWeight: 600,
+                        fontFamily: 'var(--font-inter)', transition: 'background 0.15s',
+                      }}
+                    >{label}</button>
+                  ))}
+                </div>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
+                  {articleLightboxIdx + 1} / {soroArticles.length}
+                </span>
+                <button
+                  onClick={() => setArticleLightboxIdx(null)}
+                  style={{
+                    background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 8, color: 'white', cursor: 'pointer',
+                    width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+
+              {/* Scrollable article body */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '36px 44px' }}>
+                {art.title && (
+                  <h1 style={{ fontFamily: 'var(--font-inter)', fontSize: 'clamp(22px,3vw,30px)', fontWeight: 800, color: 'white', marginBottom: 10, letterSpacing: '-0.03em' }}>
+                    {art.title}
+                  </h1>
+                )}
+                {art.date && (
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 28, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                    {art.date}
+                  </div>
+                )}
+                <div className="art-body" dangerouslySetInnerHTML={{ __html: art.html }} />
+              </div>
+
+              {/* CTA footer */}
+              <div style={{
+                borderTop: '1px solid rgba(255,255,255,0.07)',
+                padding: '18px 44px',
+                background: 'rgba(8,13,24,0.98)',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                flexShrink: 0, gap: 16, flexWrap: 'wrap',
+              }}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: 'white', letterSpacing: '-0.01em' }}>
+                    Ready to build your website?
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                    Professional site in 7 days — starting at €290
+                  </div>
+                </div>
+                <button
+                  className="btn-primary"
+                  onClick={() => { setArticleLightboxIdx(null); setTimeout(() => scrollTo('contact'), 100) }}
+                  style={{ padding: '10px 22px', fontSize: 13, whiteSpace: 'nowrap', flexShrink: 0 }}
+                >
+                  Get a Quote →
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
       <main>
-        {/* ── HERO ── */}
         <section style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', overflow: 'hidden', paddingTop: 80 }} className="grid-bg">
           <div className="orb orb-1"/><div className="orb orb-2"/><div className="orb orb-3"/>
           <div style={{ position: 'absolute', right: '-4%', top: '50%', transform: 'translateY(-50%)', fontFamily: 'var(--font-inter)', fontSize: 'clamp(120px, 18vw, 280px)', fontWeight: 900, color: 'rgba(79,156,249,0.03)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none', letterSpacing: '-0.05em' }}>NP</div>
@@ -870,17 +1061,146 @@ export default function Home() {
         <section id="blog" style={{ padding: '96px 24px', background: 'var(--bg)' }}>
           <div style={{ maxWidth: 1160, margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: 56 }}>
-              <span className="section-label" style={{ marginBottom: 16, display: 'inline-flex' }}>
-                {c('Блог', 'Blogi', 'Blog')}
-              </span>
+              <span className="section-label" style={{ marginBottom: 16, display: 'inline-flex' }}>Blog</span>
               <h2 style={{ fontFamily: 'var(--font-inter)', fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 800, marginBottom: 16, letterSpacing: '-0.02em' }}>
-                {c('Полезные статьи', 'Kasulikud artiklid', 'Useful articles')}
+                Useful articles
               </h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: 16, lineHeight: 1.75, maxWidth: 560, margin: '0 auto' }}>
-                {c('Советы по веб-дизайну, маркетингу и развитию бизнеса онлайн.', 'Näpunäited veebidisaini, turunduse ja veebipõhise äri arendamise kohta.', 'Tips on web design, marketing and growing your business online.')}
+              <p style={{ color: 'var(--text-muted)', fontSize: 16, lineHeight: 1.75, maxWidth: 560, margin: '0 auto 20px' }}>
+                Tips on web design, marketing and growing your business online.
               </p>
+              {/* ── Partnership badge ── */}
+              <a
+                href="https://trysoro.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  padding: '6px 16px', background: 'rgba(79,156,249,0.06)',
+                  border: '1px solid rgba(79,156,249,0.18)', borderRadius: 100,
+                  textDecoration: 'none', transition: 'background 0.2s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,156,249,0.12)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(79,156,249,0.06)')}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Published in partnership with</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>Soro</span>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" opacity="0.6"><path d="M7 17L17 7M7 7h10v10"/></svg>
+              </a>
             </div>
-            <div id="soro-blog" className="soro-embed-wrapper"></div>
+
+            {/* Hidden Soro source — Soro script populates this */}
+            <div
+              id="soro-blog"
+              className="soro-embed-wrapper"
+              aria-hidden="true"
+              style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', opacity: 0, pointerEvents: 'none' }}
+            />
+
+            {/* ── Custom article cards ── */}
+            {soroArticles.length > 0 ? (
+              <>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 340px), 1fr))', gap: 24 }}>
+                  {(articlesExpanded ? soroArticles : soroArticles.slice(0, 3)).map((article, i) => (
+                    <article
+                      key={article.id}
+                      className="card"
+                      style={{ overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s', display: 'flex', flexDirection: 'column' }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.transform = 'translateY(-4px)'
+                        e.currentTarget.style.boxShadow = '0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(79,156,249,0.15)'
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = ''
+                      }}
+                    >
+                      {article.image && (
+                        <div style={{ width: '100%', height: 180, overflow: 'hidden', flexShrink: 0 }}>
+                          <img
+                            src={article.image}
+                            alt={article.title}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s' }}
+                            onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.04)')}
+                            onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+                          />
+                        </div>
+                      )}
+                      <div style={{ padding: '22px 24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        {article.date && (
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                            {article.date}
+                          </div>
+                        )}
+                        <h3 style={{ fontSize: 17, fontWeight: 700, color: 'white', marginBottom: 10, letterSpacing: '-0.02em', lineHeight: 1.35, flex: 'none' }}>
+                          {article.title || `Article ${i + 1}`}
+                        </h3>
+                        {article.excerpt && (
+                          <p style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.7, marginBottom: 16, flex: 1,
+                            display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                          }}>
+                            {article.excerpt}
+                          </p>
+                        )}
+                        <div style={{ display: 'flex', gap: 10, marginTop: 'auto', paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap' }}>
+                          <button
+                            onClick={() => setArticleLightboxIdx(i)}
+                            className="btn-secondary"
+                            style={{ flex: 1, justifyContent: 'center', padding: '8px 14px', fontSize: 12 }}
+                          >
+                            Read article
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                          </button>
+                          <button
+                            onClick={() => scrollTo('contact')}
+                            className="btn-primary"
+                            style={{ flex: 1, justifyContent: 'center', padding: '8px 14px', fontSize: 12 }}
+                          >
+                            Get a Quote
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+
+                {/* Expand / Collapse */}
+                {soroArticles.length > 3 && (
+                  <div style={{ textAlign: 'center', marginTop: 36 }}>
+                    <button
+                      onClick={() => setArticlesExpanded(prev => !prev)}
+                      className="btn-secondary"
+                      style={{ padding: '12px 28px', fontSize: 14, gap: 8 }}
+                    >
+                      {articlesExpanded
+                        ? 'Show less'
+                        : `Show ${soroArticles.length - 3} more article${soroArticles.length - 3 !== 1 ? 's' : ''}`}
+                      <svg
+                        width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                        style={{ transition: 'transform 0.3s', transform: articlesExpanded ? 'rotate(180deg)' : 'none' }}
+                      >
+                        <path d="M6 9l6 6 6-6"/>
+                      </svg>
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              /* Loading skeleton while Soro loads */
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 340px), 1fr))', gap: 24 }}>
+                {[0, 1, 2].map(i => (
+                  <div key={i} className="card" style={{ overflow: 'hidden', opacity: 0.5 }}>
+                    <div style={{ width: '100%', height: 180, background: 'rgba(255,255,255,0.04)' }} />
+                    <div style={{ padding: '22px 24px' }}>
+                      <div style={{ height: 12, background: 'rgba(255,255,255,0.06)', borderRadius: 6, width: '40%', marginBottom: 10 }} />
+                      <div style={{ height: 20, background: 'rgba(255,255,255,0.06)', borderRadius: 6, marginBottom: 8 }} />
+                      <div style={{ height: 20, background: 'rgba(255,255,255,0.04)', borderRadius: 6, width: '70%' }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
@@ -1000,18 +1320,39 @@ export default function Home() {
               </div>
               <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 12, opacity: 0.6 }}>© 2025 NorthPixel. {c('Все права защищены.', 'Kõik õigused kaitstud.', 'All rights reserved.')}</p>
             </div>
-            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-              {[
-                { label: c('Конфиденциальность', 'Privaatsus', 'Privacy'), href: '/privacy' },
-                { label: c('Условия', 'Tingimused', 'Terms'), href: '/terms' },
-                { label: c('Cookies', 'Küpsised', 'Cookies'), href: '/cookies' },
-              ].map((link, i) => (
-                <a key={i} href={link.href} style={{ color: 'var(--text-muted)', fontSize: 13, textDecoration: 'none', transition: 'color 0.2s' }}
-                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
-                  {link.label}
+            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-start', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+                {[
+                  { label: c('Конфиденциальность', 'Privaatsus', 'Privacy'), href: '/privacy' },
+                  { label: c('Условия', 'Tingimused', 'Terms'), href: '/terms' },
+                  { label: c('Cookies', 'Küpsised', 'Cookies'), href: '/cookies' },
+                ].map((link, i) => (
+                  <a key={i} href={link.href} style={{ color: 'var(--text-muted)', fontSize: 13, textDecoration: 'none', transition: 'color 0.2s' }}
+                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+              {/* Soro partnership */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.05)', width: '100%' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Blog partner:</span>
+                <a
+                  href="https://trysoro.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                    fontSize: 12, fontWeight: 700, color: 'var(--accent)',
+                    textDecoration: 'none', transition: 'opacity 0.2s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = '0.75')}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+                >
+                  Soro
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
                 </a>
-              ))}
+              </div>
             </div>
           </div>
         </footer>

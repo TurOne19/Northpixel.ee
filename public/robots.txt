@@ -1,3 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /terms
+Disallow: /privacy
+Disallow: /cookies
 Sitemap: https://northpixel.ee/sitemap.xml
