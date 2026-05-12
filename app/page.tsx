@@ -102,7 +102,7 @@ export default function Home() {
   const [formData, setFormData] = useState({ name: '', contact: '', business: '', budget: '', message: '' })
   const [lightbox, setLightbox] = useState<{ link: string; title: string } | null>(null)
   const [soroArticles, setSoroArticles] = useState<Array<{
-    id: number; title: string; date: string; excerpt: string; html: string; image: string;
+    id: number; soroId: string; slug: string; title: string; date: string; excerpt: string; html: string; image: string;
   }>>([])
   const [articlesExpanded, setArticlesExpanded] = useState(false)
   const [articleLightboxIdx, setArticleLightboxIdx] = useState<number | null>(null)
@@ -150,48 +150,57 @@ export default function Home() {
     return () => { document.body.style.overflow = '' }
   }, [menuOpen, lightbox, articleLightboxIdx])
 
-  // ── Soro blog extraction ──────────────────────────────────────────────────
+  // ── Soro blog — read SORO_ARTICLES global injected by the Soro embed script ──
   useEffect(() => {
-    const container = document.getElementById('soro-blog')
-    if (!container) return
+    const SORO_API_BASE = 'https://app.trysoro.com'
+    const SORO_TOKEN    = 'c1441b0e-92a4-4fec-b47c-a10a02e5b1e0'
 
-    const extract = (): boolean => {
-      if (container.children.length === 0) return false
+    const tryLoad = () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const raw = (window as any).SORO_ARTICLES
+      if (!Array.isArray(raw) || raw.length === 0) return false
 
-      // Try known selectors, then fall back to direct children
-      let els: Element[] = []
-      for (const sel of ['article', '.soro-post', '.blog-post', '.post-card', '.post-item', '.entry']) {
-        const found = container.querySelectorAll(sel)
-        if (found.length > 0) { els = Array.from(found); break }
-      }
-      if (els.length === 0) els = Array.from(container.children)
-      if (els.length === 0) return false
-
-      const articles = els.map((el, i) => {
-        const titleEl  = el.querySelector('h1,h2,h3,h4,[class*="title"],[class*="heading"]')
-        const dateEl   = el.querySelector('time,[class*="date"],[class*="time"]')
-        const excerpEl = el.querySelector('[class*="excerpt"],[class*="summary"],[class*="description"],p')
-        const imgEl    = el.querySelector('img') as HTMLImageElement | null
-        return {
-          id: i,
-          title:   titleEl?.textContent?.trim()  || '',
-          date:    dateEl?.textContent?.trim()   || '',
-          excerpt: excerpEl?.textContent?.trim() || '',
-          html:    el.outerHTML,
-          image:   imgEl?.src || '',
-        }
-      }).filter(a => a.title || a.html.length > 100)
-
-      if (articles.length > 0) { setSoroArticles(articles); return true }
-      return false
+      const mapped = raw.map((a: {
+        id: string; title: string; date: string; isoDate: string;
+        excerpt: string; image?: string; slug: string
+      }, i: number) => ({
+        id: i,
+        soroId: a.id,
+        slug: a.slug,
+        title: a.title || '',
+        date: a.date || '',
+        excerpt: a.excerpt || '',
+        image: a.image || '',
+        html: '', // loaded on demand
+      }))
+      setSoroArticles(mapped)
+      return true
     }
 
-    if (!extract()) {
-      const obs = new MutationObserver(() => { if (extract()) obs.disconnect() })
-      obs.observe(container, { childList: true, subtree: true })
-      return () => obs.disconnect()
-    }
+    if (tryLoad()) return
+
+    // Soro script loads lazily — poll until available (max ~6 s)
+    let attempts = 0
+    const interval = setInterval(() => {
+      attempts++
+      if (tryLoad() || attempts > 60) clearInterval(interval)
+    }, 100)
+    return () => clearInterval(interval)
   }, [])
+
+  // Fetch full article HTML from Soro API when opening lightbox
+  const loadArticleContent = async (idx: number) => {
+    const art = soroArticles[idx]
+    if (!art || art.html) return // already loaded
+    const SORO_API_BASE = 'https://app.trysoro.com'
+    const SORO_TOKEN    = 'c1441b0e-92a4-4fec-b47c-a10a02e5b1e0'
+    try {
+      const res = await fetch(`${SORO_API_BASE}/api/embed/${SORO_TOKEN}/article/${art.soroId}`)
+      if (!res.ok) return
+      const data = await res.json()
+      setSoroArticles(prev => prev.map((a, i) => i === idx ? { ...a, html: data.content || '' } : a))
+    } catch { /* ignore */ }
+  }
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -240,7 +249,7 @@ export default function Home() {
     { label: lang === 'ru' ? 'Примеры' : lang === 'et' ? 'Tööd' : 'Work', id: 'work' },
     { label: lang === 'ru' ? 'Пакеты' : lang === 'et' ? 'Hinnad' : 'Pricing', id: 'pricing' },
     { label: 'FAQ', id: 'faq' },
-    { label: 'Blog', id: 'blog' },
+    { label: lang === 'ru' ? 'Блог' : lang === 'et' ? 'Blogi' : 'Blog', id: 'blog' },
   ]
 
   const c = (ru: string, et: string, en: string) => lang === 'ru' ? ru : lang === 'et' ? et : en
@@ -457,6 +466,7 @@ export default function Home() {
               .art-body blockquote{border-left:3px solid var(--accent);padding-left:16px;margin:1.4em 0;color:var(--text-muted);font-style:italic}
               .art-body code{background:rgba(79,156,249,0.1);padding:2px 7px;border-radius:5px;font-size:13px}
               .art-body *{box-sizing:border-box}
+              @keyframes soro-spin{to{transform:rotate(360deg)}}
             `}</style>
             <div
               onClick={e => e.stopPropagation()}
@@ -476,8 +486,8 @@ export default function Home() {
               }}>
                 <div style={{ display: 'flex', gap: 6 }}>
                   {[
-                    { label: '← Prev', active: hasPrev, action: () => hasPrev && setArticleLightboxIdx(articleLightboxIdx - 1) },
-                    { label: 'Next →', active: hasNext, action: () => hasNext && setArticleLightboxIdx(articleLightboxIdx + 1) },
+                    { label: '← Prev', active: hasPrev, action: () => { if (hasPrev) { setArticleLightboxIdx(articleLightboxIdx - 1); loadArticleContent(articleLightboxIdx - 1) } } },
+                    { label: 'Next →', active: hasNext, action: () => { if (hasNext) { setArticleLightboxIdx(articleLightboxIdx + 1); loadArticleContent(articleLightboxIdx + 1) } } },
                   ].map(({ label, active, action }) => (
                     <button
                       key={label}
@@ -522,7 +532,15 @@ export default function Home() {
                     {art.date}
                   </div>
                 )}
-                <div className="art-body" dangerouslySetInnerHTML={{ __html: art.html }} />
+                {art.html
+                  ? <div className="art-body" dangerouslySetInnerHTML={{ __html: art.html }} />
+                  : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '40px 0', color: 'var(--text-muted)', fontSize: 14 }}>
+                      <div style={{ width: 20, height: 20, border: '2px solid rgba(255,255,255,0.1)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'soro-spin 0.8s linear infinite', flexShrink: 0 }} />
+                      Loading article...
+                    </div>
+                  )
+                }
               </div>
 
               {/* CTA footer */}
@@ -535,10 +553,10 @@ export default function Home() {
               }}>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: 'white', letterSpacing: '-0.01em' }}>
-                    Ready to build your website?
+                    {c('Готовы запустить сайт?', 'Valmis veebilehte käivitama?', 'Ready to build your website?')}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-                    Professional site in 7 days — starting at €290
+                    {c('Профессиональный сайт за 7 дней — от €290', 'Professionaalne veebileht 7 päevaga — alates €290', 'Professional site in 7 days — starting at €290')}
                   </div>
                 </div>
                 <button
@@ -546,7 +564,7 @@ export default function Home() {
                   onClick={() => { setArticleLightboxIdx(null); setTimeout(() => scrollTo('contact'), 100) }}
                   style={{ padding: '10px 22px', fontSize: 13, whiteSpace: 'nowrap', flexShrink: 0 }}
                 >
-                  Get a Quote →
+                  {c('Оставить заявку →', 'Küsi pakkumist →', 'Get a Quote →')}
                 </button>
               </div>
             </div>
@@ -1061,12 +1079,12 @@ export default function Home() {
         <section id="blog" style={{ padding: '96px 24px', background: 'var(--bg)' }}>
           <div style={{ maxWidth: 1160, margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: 56 }}>
-              <span className="section-label" style={{ marginBottom: 16, display: 'inline-flex' }}>Blog</span>
+              <span className="section-label" style={{ marginBottom: 16, display: 'inline-flex' }}>{c('Блог', 'Blogi', 'Blog')}</span>
               <h2 style={{ fontFamily: 'var(--font-inter)', fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 800, marginBottom: 16, letterSpacing: '-0.02em' }}>
-                Useful articles
+                {c('Полезные статьи', 'Kasulikud artiklid', 'Useful articles')}
               </h2>
               <p style={{ color: 'var(--text-muted)', fontSize: 16, lineHeight: 1.75, maxWidth: 560, margin: '0 auto 20px' }}>
-                Tips on web design, marketing and growing your business online.
+                {c('Советы по веб-дизайну, маркетингу и развитию бизнеса онлайн.', 'Näpunäited veebidisaini, turunduse ja veebipõhise äri arendamise kohta.', 'Tips on web design, marketing and growing your business online.')}
               </p>
               {/* ── Partnership badge ── */}
               <a
@@ -1083,7 +1101,7 @@ export default function Home() {
                 onMouseLeave={e => (e.currentTarget.style.background = 'rgba(79,156,249,0.06)')}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Published in partnership with</span>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{c('Опубликовано совместно с', 'Avaldatud koostöös', 'Published in partnership with')}</span>
                 <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>Soro</span>
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" opacity="0.6"><path d="M7 17L17 7M7 7h10v10"/></svg>
               </a>
@@ -1145,11 +1163,11 @@ export default function Home() {
                         )}
                         <div style={{ display: 'flex', gap: 10, marginTop: 'auto', paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap' }}>
                           <button
-                            onClick={() => setArticleLightboxIdx(i)}
+                            onClick={() => { setArticleLightboxIdx(i); loadArticleContent(i) }}
                             className="btn-secondary"
                             style={{ flex: 1, justifyContent: 'center', padding: '8px 14px', fontSize: 12 }}
                           >
-                            Read article
+                            {c('Читать статью', 'Loe artiklit', 'Read article')}
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                           </button>
                           <button
@@ -1157,7 +1175,7 @@ export default function Home() {
                             className="btn-primary"
                             style={{ flex: 1, justifyContent: 'center', padding: '8px 14px', fontSize: 12 }}
                           >
-                            Get a Quote
+                            {c('Оставить заявку', 'Küsi pakkumist', 'Get a Quote')}
                           </button>
                         </div>
                       </div>
@@ -1174,8 +1192,8 @@ export default function Home() {
                       style={{ padding: '12px 28px', fontSize: 14, gap: 8 }}
                     >
                       {articlesExpanded
-                        ? 'Show less'
-                        : `Show ${soroArticles.length - 3} more article${soroArticles.length - 3 !== 1 ? 's' : ''}`}
+                        ? c('Свернуть', 'Näita vähem', 'Show less')
+                        : c(`Показать ещё ${soroArticles.length - 3}`, `Näita veel ${soroArticles.length - 3}`, `Show ${soroArticles.length - 3} more article${soroArticles.length - 3 !== 1 ? 's' : ''}`)}
                       <svg
                         width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
                         style={{ transition: 'transform 0.3s', transform: articlesExpanded ? 'rotate(180deg)' : 'none' }}
