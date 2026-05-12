@@ -150,42 +150,88 @@ export default function Home() {
     return () => { document.body.style.overflow = '' }
   }, [menuOpen, lightbox, articleLightboxIdx])
 
-  // ── Soro blog — read SORO_ARTICLES global injected by the Soro embed script ──
+  // ── Soro blog — wait for Soro to populate #soro-blog, then extract data ──
   useEffect(() => {
-    const SORO_API_BASE = 'https://app.trysoro.com'
-    const SORO_TOKEN    = 'c1441b0e-92a4-4fec-b47c-a10a02e5b1e0'
+    // Convert Soro global article objects to our format
+    const mapArticles = (raw: Array<{
+      id: string; title: string; date: string; isoDate: string;
+      excerpt: string; image?: string; slug: string
+    }>) => raw.map((a, i) => ({
+      id: i,
+      soroId: a.id,
+      slug: a.slug,
+      title: a.title || '',
+      date: a.date || '',
+      excerpt: a.excerpt || '',
+      image: a.image || '',
+      html: '',
+    }))
 
-    const tryLoad = () => {
+    // Try reading window.SORO_ARTICLES (set by Soro script)
+    const tryFromGlobal = (): boolean => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const raw = (window as any).SORO_ARTICLES
-      if (!Array.isArray(raw) || raw.length === 0) return false
-
-      const mapped = raw.map((a: {
-        id: string; title: string; date: string; isoDate: string;
-        excerpt: string; image?: string; slug: string
-      }, i: number) => ({
-        id: i,
-        soroId: a.id,
-        slug: a.slug,
-        title: a.title || '',
-        date: a.date || '',
-        excerpt: a.excerpt || '',
-        image: a.image || '',
-        html: '', // loaded on demand
-      }))
-      setSoroArticles(mapped)
-      return true
+      if (Array.isArray(raw) && raw.length > 0) {
+        setSoroArticles(mapArticles(raw))
+        return true
+      }
+      return false
     }
 
-    if (tryLoad()) return
+    // Try extracting article cards from the Soro-rendered DOM
+    const tryFromDom = (): boolean => {
+      const container = document.getElementById('soro-blog')
+      if (!container || container.children.length === 0) return false
 
-    // Soro script loads lazily — poll until available (max ~6 s)
+      let els: Element[] = []
+      for (const sel of ['.soro-blog-card', 'a[data-slug]', 'article', '.soro-post', '.blog-post', '.post-card']) {
+        const found = container.querySelectorAll(sel)
+        if (found.length > 0) { els = Array.from(found); break }
+      }
+      if (els.length === 0) els = Array.from(container.querySelectorAll('a')).filter(a => a.getAttribute('data-slug'))
+      if (els.length === 0) return false
+
+      const articles = els.map((el, i) => {
+        const titleEl  = el.querySelector('h1,h2,h3,h4,[class*="title"],[class*="heading"]')
+        const dateEl   = el.querySelector('time,[class*="date"]')
+        const excerpEl = el.querySelector('[class*="excerpt"],[class*="description"],p')
+        const imgEl    = el.querySelector('img') as HTMLImageElement | null
+        const slug     = el.getAttribute('data-slug') || `article-${i}`
+        return {
+          id: i,
+          soroId: el.getAttribute('data-id') || slug,
+          slug,
+          title:   titleEl?.textContent?.trim() || `Article ${i + 1}`,
+          date:    dateEl?.textContent?.trim()  || '',
+          excerpt: excerpEl?.textContent?.trim() || '',
+          image:   imgEl?.src || '',
+          html:    '',
+        }
+      }).filter(a => a.title.length > 0)
+
+      if (articles.length > 0) { setSoroArticles(articles); return true }
+      return false
+    }
+
+    if (tryFromGlobal()) return
+
+    // Observe #soro-blog for DOM changes AND poll window.SORO_ARTICLES
+    const container = document.getElementById('soro-blog')
+    if (!container) return
+
+    const obs = new MutationObserver(() => {
+      if (tryFromGlobal() || tryFromDom()) obs.disconnect()
+    })
+    obs.observe(container, { childList: true, subtree: true })
+
     let attempts = 0
     const interval = setInterval(() => {
       attempts++
-      if (tryLoad() || attempts > 60) clearInterval(interval)
+      if (tryFromGlobal() || tryFromDom()) { clearInterval(interval); obs.disconnect() }
+      if (attempts > 100) clearInterval(interval)
     }, 100)
-    return () => clearInterval(interval)
+
+    return () => { obs.disconnect(); clearInterval(interval) }
   }, [])
 
   // Fetch full article HTML from Soro API when opening lightbox
@@ -1112,7 +1158,7 @@ export default function Home() {
               id="soro-blog"
               className="soro-embed-wrapper"
               aria-hidden="true"
-              style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', opacity: 0, pointerEvents: 'none' }}
+              style={{ visibility: 'hidden', height: 0, overflow: 'hidden', pointerEvents: 'none' }}
             />
 
             {/* ── Custom article cards ── */}
