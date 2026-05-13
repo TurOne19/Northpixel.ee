@@ -162,7 +162,7 @@ export default function Home() {
       'kiire-veebilehe-tegemine':        '0e71f5eb-0af8-4536-9822-485bf345cd80',
       'miks-koduleht-ei-too-kliente':    '2ace7a0f-06f0-4d93-b65b-f5c903184c7f',
       'professional-website-for-consultants': '09d4ce73-7e01-4e53-8703-f318a6537a77',
-      'mis-peab-olema-muuval-kodulehel': 'UNKNOWN',
+      'mis-peab-olema-muuval-kodulehel': '7ce2bb4a-ec2d-492d-adf2-a452313e61fa',
     }
 
     // SEED shown instantly before Soro DOM renders
@@ -217,13 +217,30 @@ export default function Home() {
 
     if (tryFromDom()) return
 
-    // Wait for Soro to render cards into DOM
+    // Watch for Soro DOM render
     const soroDiv = document.querySelector('#soro-blog')
     let obs: MutationObserver | null = null
     if (soroDiv) {
       obs = new MutationObserver(() => { if (tryFromDom()) obs!.disconnect() })
       obs.observe(soroDiv, { childList: true, subtree: true })
     }
+
+    // Also fetch from our API route which parses the Soro script server-side
+    // This gives us UUIDs for new articles automatically
+    fetch('/api/articles')
+      .then(r => r.json())
+      .then(data => {
+        if (!Array.isArray(data.articles) || data.articles.length === 0) return
+        const live = data.articles.map((a: { id: string; title: string; date: string; excerpt: string; image?: string; slug: string }, i: number) => ({
+          id: i, soroId: a.id, slug: a.slug,
+          title: a.title || '', date: a.date || '',
+          excerpt: a.excerpt || '', image: a.image || '', html: '',
+        }))
+        soroArticlesRef.current = live
+        setSoroArticles(live)
+        obs?.disconnect()
+      })
+      .catch(() => {/* ignore */})
 
     return () => obs?.disconnect()
   }, [])
