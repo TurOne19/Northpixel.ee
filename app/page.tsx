@@ -151,55 +151,48 @@ export default function Home() {
     return () => { document.body.style.overflow = '' }
   }, [menuOpen, lightbox, articleLightboxIdx])
 
-  // ── Soro blog ── static seed + live updates from window.SORO_ARTICLES ──
+  // ── Soro blog ──────────────────────────────────────────────────────────────
+  // Strategy:
+  //   1. Show SEED articles instantly (no skeleton)
+  //   2. In background, wait for Soro script to set window.SORO_ARTICLES
+  //   3. When it arrives, replace with live data (picks up new articles automatically)
   useEffect(() => {
-    // Static seed from Soro embed script (always up to date at deploy time)
-    const SEED = [
-      {
-        id: '0e71f5eb-0af8-4536-9822-485bf345cd80',
-        slug: 'kiire-veebilehe-tegemine',
-        title: 'Kiire veebilehe tegemine that brings leads',
-        date: 'May 11, 2026',
+    type RawArticle = { id: string; title: string; date: string; isoDate?: string; excerpt: string; image?: string; slug: string }
+
+    // Known articles — fallback if Soro script is slow / blocked
+    // These are shown instantly; live data overwrites them once Soro loads
+    const SEED: RawArticle[] = [
+      { id: '0e71f5eb-0af8-4536-9822-485bf345cd80', slug: 'kiire-veebilehe-tegemine',
+        title: 'Kiire veebilehe tegemine that brings leads', date: 'May 11, 2026',
         excerpt: 'Kiire veebilehe tegemine works when the site is built to generate leads, build trust, and launch fast without wasting time on extras.',
-        image: 'https://afocirmbqdxnkyescnev.supabase.co/storage/v1/object/public/featured-images/009aea0d-be41-4e6c-a094-2361085d5ed4/0e71f5eb-0af8-4536-9822-485bf345cd80.webp',
-      },
-      {
-        id: '2ace7a0f-06f0-4d93-b65b-f5c903184c7f',
-        slug: 'miks-koduleht-ei-too-kliente',
-        title: 'Miks koduleht ei too kliente? 9 põhjust',
-        date: 'May 9, 2026',
+        image: 'https://afocirmbqdxnkyescnev.supabase.co/storage/v1/object/public/featured-images/009aea0d-be41-4e6c-a094-2361085d5ed4/0e71f5eb-0af8-4536-9822-485bf345cd80.webp' },
+      { id: '2ace7a0f-06f0-4d93-b65b-f5c903184c7f', slug: 'miks-koduleht-ei-too-kliente',
+        title: 'Miks koduleht ei too kliente? 9 põhjust', date: 'May 9, 2026',
         excerpt: 'Miks koduleht ei too kliente? Vaata 9 levinud põhjust, miks veeb ei too päringuid, ja mida muuta, et rohkem külastajaid võtaks ühendust.',
-        image: 'https://afocirmbqdxnkyescnev.supabase.co/storage/v1/object/public/featured-images/009aea0d-be41-4e6c-a094-2361085d5ed4/2ace7a0f-06f0-4d93-b65b-f5c903184c7f.webp',
-      },
-      {
-        id: '09d4ce73-7e01-4e53-8703-f318a6537a77',
-        slug: 'professional-website-for-consultants',
-        title: 'Professional Website for Consultants That Converts',
-        date: 'May 7, 2026',
+        image: 'https://afocirmbqdxnkyescnev.supabase.co/storage/v1/object/public/featured-images/009aea0d-be41-4e6c-a094-2361085d5ed4/2ace7a0f-06f0-4d93-b65b-f5c903184c7f.webp' },
+      { id: '09d4ce73-7e01-4e53-8703-f318a6537a77', slug: 'professional-website-for-consultants',
+        title: 'Professional Website for Consultants That Converts', date: 'May 7, 2026',
         excerpt: 'A professional website for consultants builds trust, shows expertise, and turns visitors into inquiries with clear messaging and strong structure.',
-        image: 'https://afocirmbqdxnkyescnev.supabase.co/storage/v1/object/public/featured-images/009aea0d-be41-4e6c-a094-2361085d5ed4/09d4ce73-7e01-4e53-8703-f318a6537a77.webp',
-      },
+        image: 'https://afocirmbqdxnkyescnev.supabase.co/storage/v1/object/public/featured-images/009aea0d-be41-4e6c-a094-2361085d5ed4/09d4ce73-7e01-4e53-8703-f318a6537a77.webp' },
     ]
 
-    const toMapped = (arr: typeof SEED) => arr.map((a, i) => ({
+    const toMapped = (arr: RawArticle[]) => arr.map((a, i) => ({
       id: i, soroId: a.id, slug: a.slug,
-      title: a.title, date: a.date, excerpt: a.excerpt, image: a.image, html: '',
+      title: a.title || '', date: a.date || '',
+      excerpt: a.excerpt || '', image: a.image || '', html: '',
     }))
 
-    // Load seed immediately so cards show right away
+    // Show seed immediately
     const seedMapped = toMapped(SEED)
     soroArticlesRef.current = seedMapped
     setSoroArticles(seedMapped)
 
-    // Then try to get live list from Soro (may have newer articles)
+    // Try to get live list (has new articles added after last deploy)
     const tryLive = (): boolean => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const raw = (window as any).SORO_ARTICLES
+      const raw = (window as any).SORO_ARTICLES as RawArticle[] | undefined
       if (!Array.isArray(raw) || raw.length === 0) return false
-      const live = toMapped(raw.map((a: { id: string; title: string; date: string; isoDate: string; excerpt: string; image?: string; slug: string }) => ({
-        id: a.id, slug: a.slug, title: a.title || '',
-        date: a.date || '', excerpt: a.excerpt || '', image: a.image || '',
-      })))
+      const live = toMapped(raw)
       soroArticlesRef.current = live
       setSoroArticles(live)
       return true
@@ -207,13 +200,23 @@ export default function Home() {
 
     if (tryLive()) return
 
+    // Watch hidden soro div — Soro sets SORO_ARTICLES before touching DOM
+    const soroDiv = document.getElementById('soro-blog')
+    let obs: MutationObserver | null = null
+    if (soroDiv) {
+      obs = new MutationObserver(() => { if (tryLive()) obs!.disconnect() })
+      obs.observe(soroDiv, { childList: true, subtree: true })
+    }
+
+    // Backup poll for 30s
     let attempts = 0
     const interval = setInterval(() => {
       attempts++
-      if (tryLive() || attempts > 75) clearInterval(interval)
+      if (tryLive()) { clearInterval(interval); obs?.disconnect() }
+      if (attempts > 150) clearInterval(interval)
     }, 200)
 
-    return () => clearInterval(interval)
+    return () => { clearInterval(interval); obs?.disconnect() }
   }, [])
 
   // Fetch full article HTML from Soro API when opening lightbox
