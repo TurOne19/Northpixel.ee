@@ -152,63 +152,80 @@ export default function Home() {
   }, [menuOpen, lightbox, articleLightboxIdx])
 
   // ── Soro blog ──────────────────────────────────────────────────────────────
-  // Strategy:
-  //   1. Show SEED articles instantly (no skeleton)
-  //   2. In background, wait for Soro script to set window.SORO_ARTICLES
-  //   3. When it arrives, replace with live data (picks up new articles automatically)
+  // Soro renders cards into #soro-blog with data-slug attributes.
+  // We read those cards from DOM to get live articles (incl. new ones).
+  // UUID lookup table maps slug → UUID so the article API call works.
   useEffect(() => {
-    type RawArticle = { id: string; title: string; date: string; isoDate?: string; excerpt: string; image?: string; slug: string }
+    // slug → UUID map. Add new entries here when Soro publishes new articles.
+    // UUID is needed to fetch full article content via Soro API.
+    const SLUG_TO_UUID: Record<string, string> = {
+      'kiire-veebilehe-tegemine':        '0e71f5eb-0af8-4536-9822-485bf345cd80',
+      'miks-koduleht-ei-too-kliente':    '2ace7a0f-06f0-4d93-b65b-f5c903184c7f',
+      'professional-website-for-consultants': '09d4ce73-7e01-4e53-8703-f318a6537a77',
+      'mis-peab-olema-muuval-kodulehel': 'UNKNOWN',
+    }
 
-    // Known articles — fallback if Soro script is slow / blocked
-    // These are shown instantly; live data overwrites them once Soro loads
-    const SEED: RawArticle[] = [
-      { id: '0e71f5eb-0af8-4536-9822-485bf345cd80', slug: 'kiire-veebilehe-tegemine',
+    // SEED shown instantly before Soro DOM renders
+    const SEED = [
+      { soroId: '0e71f5eb-0af8-4536-9822-485bf345cd80', slug: 'kiire-veebilehe-tegemine',
         title: 'Kiire veebilehe tegemine that brings leads', date: 'May 11, 2026',
         excerpt: 'Kiire veebilehe tegemine works when the site is built to generate leads, build trust, and launch fast without wasting time on extras.',
         image: 'https://afocirmbqdxnkyescnev.supabase.co/storage/v1/object/public/featured-images/009aea0d-be41-4e6c-a094-2361085d5ed4/0e71f5eb-0af8-4536-9822-485bf345cd80.webp' },
-      { id: '2ace7a0f-06f0-4d93-b65b-f5c903184c7f', slug: 'miks-koduleht-ei-too-kliente',
+      { soroId: '2ace7a0f-06f0-4d93-b65b-f5c903184c7f', slug: 'miks-koduleht-ei-too-kliente',
         title: 'Miks koduleht ei too kliente? 9 põhjust', date: 'May 9, 2026',
         excerpt: 'Miks koduleht ei too kliente? Vaata 9 levinud põhjust, miks veeb ei too päringuid, ja mida muuta, et rohkem külastajaid võtaks ühendust.',
         image: 'https://afocirmbqdxnkyescnev.supabase.co/storage/v1/object/public/featured-images/009aea0d-be41-4e6c-a094-2361085d5ed4/2ace7a0f-06f0-4d93-b65b-f5c903184c7f.webp' },
-      { id: '09d4ce73-7e01-4e53-8703-f318a6537a77', slug: 'professional-website-for-consultants',
+      { soroId: '09d4ce73-7e01-4e53-8703-f318a6537a77', slug: 'professional-website-for-consultants',
         title: 'Professional Website for Consultants That Converts', date: 'May 7, 2026',
         excerpt: 'A professional website for consultants builds trust, shows expertise, and turns visitors into inquiries with clear messaging and strong structure.',
         image: 'https://afocirmbqdxnkyescnev.supabase.co/storage/v1/object/public/featured-images/009aea0d-be41-4e6c-a094-2361085d5ed4/09d4ce73-7e01-4e53-8703-f318a6537a77.webp' },
     ]
 
-    const toMapped = (arr: RawArticle[]) => arr.map((a, i) => ({
-      id: i, soroId: a.id, slug: a.slug,
-      title: a.title || '', date: a.date || '',
-      excerpt: a.excerpt || '', image: a.image || '', html: '',
-    }))
-
-    // Show seed immediately
-    const seedMapped = toMapped(SEED)
+    const seedMapped = SEED.map((a, i) => ({ id: i, ...a, html: '' }))
     soroArticlesRef.current = seedMapped
     setSoroArticles(seedMapped)
 
-    // Try to get live list (has new articles added after last deploy)
-    const tryLive = (): boolean => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const raw = (window as any).SORO_ARTICLES as RawArticle[] | undefined
-      if (!Array.isArray(raw) || raw.length === 0) return false
-      const live = toMapped(raw)
+    // Read live cards from Soro DOM — picks up any new articles automatically
+    const tryFromDom = (): boolean => {
+      const soroDiv = document.querySelector('#soro-blog')
+      if (!soroDiv) return false
+      const cards = Array.from(soroDiv.querySelectorAll('.soro-blog-card[data-slug]'))
+      if (cards.length === 0) return false
+
+      const live = cards.map((card, i) => {
+        const slug      = card.getAttribute('data-slug') || ''
+        const titleEl   = card.querySelector('.soro-blog-card-title')
+        const dateEl    = card.querySelector('.soro-blog-card-date')
+        const excerptEl = card.querySelector('.soro-blog-card-excerpt')
+        const imgEl     = card.querySelector('img') as HTMLImageElement | null
+        return {
+          id: i,
+          soroId: SLUG_TO_UUID[slug] || slug,
+          slug,
+          title:   titleEl?.textContent?.trim()   || '',
+          date:    dateEl?.textContent?.trim()    || '',
+          excerpt: excerptEl?.textContent?.trim() || '',
+          image:   imgEl?.src || '',
+          html:    '',
+        }
+      })
+
       soroArticlesRef.current = live
       setSoroArticles(live)
       return true
     }
 
-    if (tryLive()) return
+    if (tryFromDom()) return
 
-    // Poll until window.SORO_ARTICLES is set by the Soro script (afterInteractive)
-    let attempts = 0
-    const interval = setInterval(() => {
-      attempts++
-      if (tryLive()) clearInterval(interval)
-      if (attempts > 150) clearInterval(interval) // 30s max
-    }, 200)
+    // Wait for Soro to render cards into DOM
+    const soroDiv = document.querySelector('#soro-blog')
+    let obs: MutationObserver | null = null
+    if (soroDiv) {
+      obs = new MutationObserver(() => { if (tryFromDom()) obs!.disconnect() })
+      obs.observe(soroDiv, { childList: true, subtree: true })
+    }
 
-    return () => clearInterval(interval)
+    return () => obs?.disconnect()
   }, [])
 
   // Fetch full article HTML from Soro API when opening lightbox
