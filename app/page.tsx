@@ -200,22 +200,15 @@ export default function Home() {
 
     if (tryLive()) return
 
-    // Listen for the soro-ready event fired by layout.tsx onLoad
-    const onSoroReady = () => tryLive()
-    window.addEventListener('soro-ready', onSoroReady)
-
-    // Backup poll for 30s (covers cases where event fired before listener attached)
+    // Poll until window.SORO_ARTICLES is set by the Soro script (afterInteractive)
     let attempts = 0
     const interval = setInterval(() => {
       attempts++
       if (tryLive()) clearInterval(interval)
-      if (attempts > 150) clearInterval(interval)
+      if (attempts > 150) clearInterval(interval) // 30s max
     }, 200)
 
-    return () => {
-      window.removeEventListener('soro-ready', onSoroReady)
-      clearInterval(interval)
-    }
+    return () => clearInterval(interval)
   }, [])
 
   // Fetch full article HTML from Soro API when opening lightbox
