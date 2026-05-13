@@ -98,10 +98,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Script
           src="https://app.trysoro.com/api/embed/c1441b0e-92a4-4fec-b47c-a10a02e5b1e0"
           strategy="afterInteractive"
-          onLoad={() => {
-            // Signal to page.tsx that SORO_ARTICLES is now available
-            window.dispatchEvent(new Event('soro-ready'))
-          }}
         />
       </body>
     </html>
