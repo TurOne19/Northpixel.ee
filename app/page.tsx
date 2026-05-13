@@ -200,23 +200,22 @@ export default function Home() {
 
     if (tryLive()) return
 
-    // Watch hidden soro div — Soro sets SORO_ARTICLES before touching DOM
-    const soroDiv = document.getElementById('soro-blog')
-    let obs: MutationObserver | null = null
-    if (soroDiv) {
-      obs = new MutationObserver(() => { if (tryLive()) obs!.disconnect() })
-      obs.observe(soroDiv, { childList: true, subtree: true })
-    }
+    // Listen for the soro-ready event fired by layout.tsx onLoad
+    const onSoroReady = () => tryLive()
+    window.addEventListener('soro-ready', onSoroReady)
 
-    // Backup poll for 30s
+    // Backup poll for 30s (covers cases where event fired before listener attached)
     let attempts = 0
     const interval = setInterval(() => {
       attempts++
-      if (tryLive()) { clearInterval(interval); obs?.disconnect() }
+      if (tryLive()) clearInterval(interval)
       if (attempts > 150) clearInterval(interval)
     }, 200)
 
-    return () => { clearInterval(interval); obs?.disconnect() }
+    return () => {
+      window.removeEventListener('soro-ready', onSoroReady)
+      clearInterval(interval)
+    }
   }, [])
 
   // Fetch full article HTML from Soro API when opening lightbox
