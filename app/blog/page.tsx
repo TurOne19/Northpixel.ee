@@ -1,11 +1,12 @@
 import { redirect } from 'next/navigation'
 
-export default function BlogPage({
+export default async function BlogPage({
   searchParams,
 }: {
-  searchParams: { post?: string }
+  searchParams: Promise<{ post?: string }>
 }) {
-  const post = searchParams.post
+  const params = await searchParams
+  const post = params.post
   if (post) redirect(`/?article=${post}`)
   redirect('/')
 }
