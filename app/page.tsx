@@ -286,7 +286,7 @@ export default function Home() {
   useEffect(() => {
     if (articleLightboxIdx !== null && soroArticles[articleLightboxIdx]) {
       const slug = soroArticles[articleLightboxIdx].slug
-      window.history.pushState({}, '', `?post=${slug}`)
+      window.history.pushState({}, '', `/blog?post=${slug}`)
     } else if (articleLightboxIdx === null) {
       const url = new URL(window.location.href)
       if (url.searchParams.has('post')) {
