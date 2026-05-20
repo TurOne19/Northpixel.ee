@@ -7,7 +7,7 @@ export default async function BlogPage({
 }) {
   const { post } = await searchParams
   if (post) {
-    redirect(`/?article=${post}#blog`)
+    redirect(`/?article=${post}`)
   }
   redirect('/#blog')
 }
