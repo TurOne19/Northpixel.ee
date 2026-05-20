@@ -251,7 +251,23 @@ export default function Home() {
       return true
     }
 
-    checkUrlArticle(soroArticlesRef.current)
+    // If ?article=slug in URL, keep retrying until article appears in list
+    const articleSlug = new URLSearchParams(window.location.search).get('article')
+    if (articleSlug) {
+      let retries = 0
+      const retryInterval = setInterval(() => {
+        retries++
+        const arts = soroArticlesRef.current
+        const idx = arts.findIndex(a => a.slug === articleSlug)
+        if (idx !== -1) {
+          clearInterval(retryInterval)
+          window.history.replaceState({}, '', '/')
+          setArticleLightboxIdx(idx)
+          loadArticleContent(idx)
+        }
+        if (retries > 100) clearInterval(retryInterval) // 20s max
+      }, 200)
+    }
 
     if (tryFromDom()) return
 
