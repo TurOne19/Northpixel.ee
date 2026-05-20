@@ -282,20 +282,6 @@ export default function Home() {
     } catch { /* ignore */ }
   }
 
-  // Update URL when article lightbox opens/closes
-  useEffect(() => {
-    if (articleLightboxIdx !== null && soroArticles[articleLightboxIdx]) {
-      const slug = soroArticles[articleLightboxIdx].slug
-      window.history.pushState({}, '', `/blog/${slug}`)
-    } else if (articleLightboxIdx === null) {
-      // Restore original URL when closing
-      const url = new URL(window.location.href)
-      if (url.pathname.startsWith('/blog/')) {
-        window.history.pushState({}, '', '/#blog')
-      }
-    }
-  }, [articleLightboxIdx, soroArticles])
-
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') { setLightbox(null); setArticleLightboxIdx(null) }
