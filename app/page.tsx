@@ -186,6 +186,7 @@ export default function Home() {
     setSoroArticles(seedMapped)
 
     // Check if we need to open an article (from /blog?post= redirect)
+    // Retries automatically as more articles load from Soro DOM/API
     const checkUrlArticle = (articles: typeof seedMapped): boolean => {
       const slug = new URLSearchParams(window.location.search).get('article')
       if (!slug) return true
@@ -196,7 +197,28 @@ export default function Home() {
         loadArticleContent(idx)
         return true
       }
-      return false // not found yet, will retry when more articles load
+      // Article not in list yet — create a placeholder and open it
+      // The full list will load from Soro DOM shortly and replace it
+      if (articles.length > 0) {
+        const placeholder = {
+          id: articles.length,
+          soroId: slug, // use slug as ID, Soro API may accept it
+          slug,
+          title: '',
+          date: '',
+          excerpt: '',
+          image: '',
+          html: '',
+        }
+        const next = [...articles, placeholder]
+        soroArticlesRef.current = next
+        setSoroArticles(next)
+        setArticleLightboxIdx(next.length - 1)
+        loadArticleContent(next.length - 1)
+        window.history.replaceState({}, '', '/')
+        return true
+      }
+      return false
     }
 
     // Read live cards from Soro DOM — picks up any new articles automatically
