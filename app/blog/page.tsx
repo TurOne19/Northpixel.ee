@@ -1,12 +1,3 @@
-import { redirect } from 'next/navigation'
-
-export default async function BlogPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ post?: string }>
-}) {
-  const params = await searchParams
-  const post = params.post
-  if (post) redirect(`/?article=${post}`)
-  redirect('/')
-}
+// /blog?post=slug — render the main page directly (no redirect)
+// The main page reads ?post= param and opens the article lightbox
+export { default } from '../page'

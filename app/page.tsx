@@ -251,8 +251,9 @@ export default function Home() {
       return true
     }
 
-    // If ?article=slug in URL, keep retrying until article appears in list
-    const articleSlug = new URLSearchParams(window.location.search).get('article')
+    // If ?article= or ?post= in URL, keep retrying until article appears in list
+    const _sp = new URLSearchParams(window.location.search)
+    const articleSlug = _sp.get('article') || _sp.get('post')
     if (articleSlug) {
       let retries = 0
       const retryInterval = setInterval(() => {
