@@ -185,20 +185,18 @@ export default function Home() {
     soroArticlesRef.current = seedMapped
     setSoroArticles(seedMapped)
 
-    // Check if we need to open an article (from /blog?post= navigation)
+    // Check if we need to open an article (from /blog?post= redirect)
     const checkUrlArticle = (articles: typeof seedMapped): boolean => {
-      // Check sessionStorage (set by /blog page before redirecting here)
-      const slug = sessionStorage.getItem('openArticle') || new URLSearchParams(window.location.search).get('article')
+      const slug = new URLSearchParams(window.location.search).get('article')
       if (!slug) return true
       const idx = articles.findIndex(a => a.slug === slug)
       if (idx !== -1) {
-        sessionStorage.removeItem('openArticle')
         window.history.replaceState({}, '', '/')
         setArticleLightboxIdx(idx)
         loadArticleContent(idx)
         return true
       }
-      return false
+      return false // not found yet, will retry when more articles load
     }
 
     // Read live cards from Soro DOM — picks up any new articles automatically
