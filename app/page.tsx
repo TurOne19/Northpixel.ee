@@ -282,6 +282,20 @@ export default function Home() {
     } catch { /* ignore */ }
   }
 
+  // Update URL when article lightbox opens/closes (matches Soro ?post= format)
+  useEffect(() => {
+    if (articleLightboxIdx !== null && soroArticles[articleLightboxIdx]) {
+      const slug = soroArticles[articleLightboxIdx].slug
+      window.history.pushState({}, '', `?post=${slug}`)
+    } else if (articleLightboxIdx === null) {
+      const url = new URL(window.location.href)
+      if (url.searchParams.has('post')) {
+        url.searchParams.delete('post')
+        window.history.pushState({}, '', url.pathname + (url.search || ''))
+      }
+    }
+  }, [articleLightboxIdx, soroArticles])
+
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') { setLightbox(null); setArticleLightboxIdx(null) }
