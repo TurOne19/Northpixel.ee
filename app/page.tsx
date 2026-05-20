@@ -290,7 +290,7 @@ export default function Home() {
     } else if (articleLightboxIdx === null) {
       // Return to homepage when closing
       if (window.location.pathname !== '/' || window.location.search.includes('post=')) {
-        window.history.pushState({}, '', '/#blog')
+        window.history.pushState({}, '', '/')
       }
     }
   }, [articleLightboxIdx, soroArticles])
