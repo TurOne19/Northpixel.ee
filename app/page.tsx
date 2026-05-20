@@ -185,6 +185,22 @@ export default function Home() {
     soroArticlesRef.current = seedMapped
     setSoroArticles(seedMapped)
 
+    // Check if URL has ?article=slug (from /blog/slug redirect) and open lightbox
+    const checkUrlArticle = (articles: typeof seedMapped) => {
+      const params = new URLSearchParams(window.location.search)
+      const slug = params.get('article')
+      if (!slug) return
+      const idx = articles.findIndex(a => a.slug === slug)
+      if (idx !== -1) {
+        setArticleLightboxIdx(idx)
+        loadArticleContent(idx)
+        // Clean up URL
+        const url = new URL(window.location.href)
+        url.searchParams.delete('article')
+        window.history.replaceState({}, '', url.pathname + (url.search || '') + url.hash)
+      }
+    }
+
     // Read live cards from Soro DOM — picks up any new articles automatically
     const tryFromDom = (): boolean => {
       const soroDiv = document.querySelector('#soro-blog')
@@ -215,6 +231,8 @@ export default function Home() {
       return true
     }
 
+    checkUrlArticle(soroArticlesRef.current)
+
     if (tryFromDom()) return
 
     // Watch for Soro DOM render
@@ -239,6 +257,7 @@ export default function Home() {
         soroArticlesRef.current = live
         setSoroArticles(live)
         obs?.disconnect()
+        checkUrlArticle(live)
       })
       .catch(() => {/* ignore */})
 
@@ -1149,7 +1168,7 @@ export default function Home() {
               </p>
               {/* ── Partnership badge ── */}
               <a
-                href="https://trysoro.com"
+                href="https://trysoro.com/?linkId=lp_335812&sourceId=northpixel&tenantId=soro"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -1417,7 +1436,7 @@ export default function Home() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.05)', width: '100%' }}>
                 <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Blog partner:</span>
                 <a
-                  href="https://trysoro.com"
+                  href="https://trysoro.com/?linkId=lp_335812&sourceId=northpixel&tenantId=soro"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
