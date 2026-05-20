@@ -288,10 +288,9 @@ export default function Home() {
       const slug = soroArticles[articleLightboxIdx].slug
       window.history.pushState({}, '', `/blog?post=${slug}`)
     } else if (articleLightboxIdx === null) {
-      const url = new URL(window.location.href)
-      if (url.searchParams.has('post')) {
-        url.searchParams.delete('post')
-        window.history.pushState({}, '', url.pathname + (url.search || ''))
+      // Return to homepage when closing
+      if (window.location.pathname !== '/' || window.location.search.includes('post=')) {
+        window.history.pushState({}, '', '/#blog')
       }
     }
   }, [articleLightboxIdx, soroArticles])
